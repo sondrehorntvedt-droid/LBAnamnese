@@ -187,3 +187,24 @@ import { runValidation } from "./app/validate.js";
 Tabellen (aus `cdss/index.js` DB_SCHEMA): `cdss_diagnoses`, `cdss_questions`, `cdss_rules`,
 `risk_profiles` (**therapist_only = TRUE Pflicht, RLS**), `patient_assessments`. Die ES-Module
 sind so strukturiert, dass sie sich 1:1 in diese Tabellen serialisieren lassen (via `buildManifest`).
+
+---
+
+## Update 19.07.2026 — Supabase, Golden Cases, Regelwerk-Versionierung
+
+### Cloud-Architektur (Supabase, Projekt „Lindebergs Anamnese Database", eu-west-1, ID fexkmpamofjmiysivzzy)
+- **profiles** — je Auth-Benutzer (Trigger legt Zeile bei Registrierung an); rolle: patient|therapeut|admin (Therapeuten-Lesezugriff kommt als spätere, eigene RLS-Policy).
+- **anamnese_stand** — EIN JSONB-Datensatz je Benutzer = kompletter App-Zustand (die localStorage-Schlüssel `lindebergs_anamnese_v1`, `lindebergs_patientenakte`). RLS: nur eigene Zeile. Stempel: `app_version`, `regelwerk_version`, `aktualisiert_am` (Last-Write-Wins).
+- **regelwerk_versionen** — veröffentlichte Regelwerk-Stände (Version, SHA-256, Umfang). Volldaten liegen kanonisch in Git (`regelwerk/`), die Cloud-Zeile macht sie verifizierbar. Schreiben nur via Service-Role/Publish-Werkzeug.
+
+### Auth & Sync (app/)
+`main.js` (Gate) → `auth.js` (Anmelden/Registrieren/Reset, deutsch) → `cloud-sync.js` (`initialSync`: Cloud gewinnt; Autosave entprellt 2 s; Flush bei Verlassen; Logout sichert + räumt lokal) → `boot.js` (frühere main.js). Konto-Schritt: `steps/step-konto.js`. Client: `supabase.js` (Publishable Key ist öffentlich by design; Sicherheit = RLS).
+
+### Determinismus-Beweis (tests/)
+`tests/golden.html` führt die 11 Fälle aus `tests/golden/cases.js` je **10×** aus (bit-identisch, stabile Schlüsselsortierung) und vergleicht gegen den eingefrorenen Snapshot `tests/golden/expected.json`. Regeländerung ⇒ Fall wird rot ⇒ bewusstes Neu-Einfrieren per Commit. Das ist die technische Form von „10 gleiche Antwortmuster → 10 gleiche Ergebnisse".
+
+### Regelwerk-Versionierung (regelwerk/, tools/)
+`tools/export-regelwerk.html?version=…` exportiert die komplette Entscheidungsbasis (Fragenkatalog 594, Bäume 24+16, Testbatterie, Red-/Yellow-Flags) als `regelwerk/regelwerk-<version>.json` — ohne Zeitstempel im Inhalt (hash-stabil). Prüfung: `python3 tools/validate_regelwerk.py regelwerk/<datei>`. Aktuell: **v2026.07.19-1**, SHA-256 `f846f78c60eeafcca28a1b9a74918d516a127785231062b94fabc238aa07fc5a`, in Supabase veröffentlicht.
+
+### KI-Leitplanken (verbindlich)
+KI niemals im Entscheidungspfad (Verzweigung/Score/Red Flag/Diagnose = nur Engine). KI später ausschließlich: Freitext strukturieren, Befunde auslesen (mit Quellenpflicht), Ergebnisse formulieren — Ausgaben nur als IDs aus dem Regelwerk-Katalog, sonst verwerfen; Felder markiert als engine|ai_suggested|human_confirmed.
