@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Regelwerk-Export — Lindebergs OS</title>
+<link rel="stylesheet" href="../styles/tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+<div style="max-width:640px;margin:60px auto;padding:0 20px">
+  <div class="card">
+    <h1 class="step-title">Regelwerk-Export</h1>
+    <p class="step-subtitle">Friert die komplette Entscheidungsbasis als versioniertes JSON unter <code>generated/</code> ein (nur Dev-Server).</p>
+    <p id="status" class="field-hint">Läuft …</p>
+  </div>
+</div>
+<script type="module">
+  import { exportiereRegelwerk } from "../app/regelwerk-export.js";
+  const version = new URLSearchParams(location.search).get("version") || "0000.00.00-0";
+  exportiereRegelwerk(version)
+    .then((r) => {
+      document.getElementById("status").textContent =
+        `Fertig: regelwerk-${r.version}.json (${(r.bytes / 1024).toFixed(0)} KB) unter generated/ abgelegt.`;
+      window.__EXPORT_OK = r;
+    })
+    .catch((e) => {
+      document.getElementById("status").textContent = "FEHLER: " + e.message;
+      window.__EXPORT_OK = { fehler: String(e) };
+    });
+</script>
+</body>
+</html>
