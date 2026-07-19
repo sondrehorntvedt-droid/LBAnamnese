@@ -23,6 +23,7 @@ import {
   namespacedAccessors,
 } from "../beschwerde-store.js";
 import { state } from "../state.js";
+import { aktuelleTiefe, tierMind } from "../tiers.js";
 
 const REGION_OPTIONS = HAUPTBESCHWERDE_FRAGEN.find((f) => f.id === "HB-002").regions;
 const REGION_LABEL_BY_VALUE = Object.fromEntries(REGION_OPTIONS.map((r) => [r.value, r.label]));
@@ -33,6 +34,11 @@ const editingRegion = new Set();
 
 const W_FRAGEN_IDS = ["HB-001", "HB-003", "HB-004", "HB-005", "HB-006", "HB-007", "HB-008", "HB-009", "HB-010", "HB-011", "HB-012", "HB-013"];
 const W_FRAGEN = HAUPTBESCHWERDE_FRAGEN.filter((f) => W_FRAGEN_IDS.includes(f.id));
+
+// Fokus-Essenz der W-Fragen: Hauptanliegen, Intensität, Onset, Verlauf,
+// lindert/verschlimmert. Standard+ zeigt alle 12. So bleibt der Kern kurz,
+// ohne das klinische Grundbild zu verlieren.
+const FOKUS_W_IDS = ["HB-001", "HB-004", "HB-007", "HB-008", "HB-011", "HB-012"];
 
 const PRIORITAET_OPTIONEN = [
   { value: "p1", label: "Hauptfokus — das wichtigste Anliegen (P1)" },
@@ -123,6 +129,9 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
   if (!b.region) return card;
 
   const { getValue, setValue } = namespacedAccessors(b.id);
+  const tiefe = aktuelleTiefe(state);
+  const zeigeTiefe = tierMind(tiefe, "ganzheitlich"); // CDSS-Deep-Dive + Therapie-Historie ab Standard
+  const zeigeDeep = tierMind(tiefe, "tiefenanalyse"); // interventionelle Detailtabelle nur Deep Dive
 
   // Priorität dieser Beschwerde (Hauptfokus vs. Nebenproblem) — hilft dem
   // Therapeuten, bei mehreren Beschwerden sofort den Schwerpunkt zu sehen.
@@ -148,9 +157,11 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
   });
   card.appendChild(bodyMapWrap);
 
+  // Fokus zeigt nur die essenziellen W-Fragen; Standard/Deep alle zwölf.
+  const wListe = zeigeTiefe ? W_FRAGEN : W_FRAGEN.filter((f) => FOKUS_W_IDS.includes(f.id));
   const wStack = el("div", "field-stack");
   wStack.style.marginTop = "16px";
-  W_FRAGEN.forEach((frage) => {
+  wListe.forEach((frage) => {
     // HB-011/HB-012: regionsspezifische Optionen (z.B. Schulter ohne „langes Sitzen").
     const regionOpts = getWOptionen(b.region, frage.id);
     const f = regionOpts ? { ...frage, options: regionOpts } : frage;
@@ -158,8 +169,10 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
   });
   card.appendChild(wStack);
 
+  // CDSS-Deep-Dive (Screening + Verzweigung pro Region) erst ab Standard —
+  // in Fokus übernimmt der Therapeut die gezielte Untersuchung live.
   const regionKeys = getRegionKeysForHB002Value(b.region, state.answers["SD-004"]);
-  regionKeys.forEach((key) => {
+  if (zeigeTiefe) regionKeys.forEach((key) => {
     const { entry, fragen } = computeRegionPfadForBeschwerde(b.id, key, state.answers);
     if (!entry) return;
     card.appendChild(el("div", "section-label", entry.name));
@@ -194,6 +207,8 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
     card.appendChild(stack);
   });
 
+  // Therapie-Historie ab Standard (in Fokus nicht erhoben — spart Zeit).
+  if (zeigeTiefe) {
   card.appendChild(el("div", "section-label", "Bisherige Behandlungsversuche für diese Beschwerde"));
   const thStack = el("div", "field-stack");
   thStack.style.marginTop = "12px";
@@ -219,22 +234,25 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
   });
   thStack.appendChild(renderQuestion(THERAPIE_FREITEXT, { getValue, setValue }));
   card.appendChild(thStack);
-
-  // Interventionelle/orthopädische Maßnahmen — Gate, dann Detailtabelle.
-  const intStack = el("div", "field-stack");
-  intStack.style.marginTop = "12px";
-  const intGate = INTERVENTION_FRAGEN[0];
-  intStack.appendChild(renderQuestion({ id: intGate.id, frage: intGate.frage, type: intGate.type }, { getValue, setValue }));
-  if (getValue("TH-INT-GATE") === true) {
-    const intRep = INTERVENTION_FRAGEN[1];
-    intStack.appendChild(
-      renderQuestion(
-        { id: intRep.id, frage: intRep.frage, type: "repeatable_entry", addLabel: intRep.addLabel, hint: intRep.hint, fields: intRep.fields },
-        { getValue, setValue }
-      )
-    );
   }
-  card.appendChild(intStack);
+
+  // Interventionelle/orthopädische Maßnahmen — nur Deep Dive (Detailtiefe).
+  if (zeigeDeep) {
+    const intStack = el("div", "field-stack");
+    intStack.style.marginTop = "12px";
+    const intGate = INTERVENTION_FRAGEN[0];
+    intStack.appendChild(renderQuestion({ id: intGate.id, frage: intGate.frage, type: intGate.type }, { getValue, setValue }));
+    if (getValue("TH-INT-GATE") === true) {
+      const intRep = INTERVENTION_FRAGEN[1];
+      intStack.appendChild(
+        renderQuestion(
+          { id: intRep.id, frage: intRep.frage, type: "repeatable_entry", addLabel: intRep.addLabel, hint: intRep.hint, fields: intRep.fields },
+          { getValue, setValue }
+        )
+      );
+    }
+    card.appendChild(intStack);
+  }
 
   return card;
 }
