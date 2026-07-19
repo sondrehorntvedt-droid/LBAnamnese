@@ -27,6 +27,7 @@ import { computeLichtProfil } from "../licht.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
 import { ABSOLUTE_RED_FLAGS } from "../../data/cdss/00_red_flags.js";
 import { THERAPIE_HISTORIE_MODALITAETEN } from "../../data/A01b_therapie_historie.js";
+import { computeWHO5 } from "../faktoren-mapping.js";
 import { state } from "../state.js";
 
 const FAKTOR_KEYS = ["Relief", "Range", "Rhythm", "Regulation", "Re-Energize", "Relations", "Rise"];
@@ -173,8 +174,9 @@ function subKopf(card, text) {
 }
 
 // ✓-Liste: zeigt nur Zutreffendes — liest sich wie der ausgefüllte
-// Papierbogen (Kreuze), nicht wie ein Formular-Dump.
-function kreuzListe(card, eintraege) {
+// Papierbogen (Kreuze), nicht wie ein Formular-Dump. Optional eingefärbt
+// (z.B. Rot für auffällige Red-Flag-Antworten, Grün für Green Flags).
+function kreuzListe(card, eintraege, farbe) {
   const ul = el("ul");
   ul.style.listStyle = "none";
   ul.style.margin = "4px 0 0";
@@ -182,9 +184,39 @@ function kreuzListe(card, eintraege) {
   eintraege.forEach((t) => {
     const li = el("li", null, "✓ " + t);
     li.style.padding = "2px 0";
+    if (farbe) li.style.color = farbe;
     ul.appendChild(li);
   });
   card.appendChild(ul);
+}
+
+// Sicherheits-Kontrollfragen (RF001–RF008): wie viele beantwortet, welche positiv.
+function safetyStatus(a) {
+  const positive = [];
+  let beantwortet = 0;
+  ABSOLUTE_RED_FLAGS.forEach((rf) =>
+    (rf.questions || []).forEach((q) => {
+      if (!(q.id in a)) return;
+      beantwortet++;
+      if (a[q.id] === true) positive.push(q.text);
+    })
+  );
+  return { beantwortet, positive };
+}
+
+// Green Flags — günstige, deterministisch ableitbare Zeichen (positive
+// prognostische Faktoren). Bewusst konservativ: nur direkt aus den Antworten
+// ablesbar, keine Interpretation, keine Diagnose.
+function computeGreenFlags(a, s, safety) {
+  const flags = [];
+  if (safety.beantwortet > 0 && safety.positive.length === 0 && !(s.therapist.redFlags || []).length)
+    flags.push("Alle Sicherheits-Kontrollfragen unauffällig");
+  if (a["PMH-009"] === false) flags.push("Keine Blutverdünner");
+  if (a["PMH-010"] === false) flags.push("Keine Kortison-Dauertherapie");
+  if (a["SD-012"] === "regelmaessig" || a["SD-012"] === "intensiv") flags.push("Regelmäßig körperlich aktiv");
+  const who5 = computeWHO5(a);
+  if (who5 && who5.prozent != null && who5.prozent >= 68) flags.push(`Gutes Wohlbefinden (WHO-5 ${who5.prozent} %)`);
+  return flags;
 }
 
 // ── Reiter 1: Vollständig — nummerierter Anamnesebogen (nach Praxis-PDF) ───
@@ -244,29 +276,24 @@ function renderVollstaendig(container, s, therapistMode) {
   let nr = 0;
 
   if (!saeugling) {
-    // ── 01 · KONTRAINDIKATIONEN & SICHERHEIT ──
-    const sich = sektionNr(container, ++nr, "Kontraindikationen & Sicherheit");
-    const positive = [];
-    let beantwortet = 0;
-    ABSOLUTE_RED_FLAGS.forEach((rf) =>
-      (rf.questions || []).forEach((q) => {
-        if (!(q.id in a)) return;
-        beantwortet++;
-        consumed.add(q.id);
-        if (a[q.id] === true) positive.push(q.text);
-      })
-    );
-    if (positive.length) {
-      const warn = el("p", null, "⚠ Auffällige Kontrollfragen:");
+    // ── 01 · RISIKOPROFIL & FLAGS (Red / Yellow / Green) ──
+    const sich = sektionNr(container, ++nr, "Risikoprofil & Flags");
+    const safety = safetyStatus(a);
+    ABSOLUTE_RED_FLAGS.forEach((rf) => (rf.questions || []).forEach((q) => { if (q.id in a) consumed.add(q.id); }));
+
+    // 🚩 Red Flags — Sicherheits-Kontrollfragen
+    subKopf(sich, "🚩 Red Flags — Sicherheits-Kontrollfragen");
+    if (safety.positive.length) {
+      const warn = el("p", null, "Auffällig beantwortet:");
       warn.style.color = "var(--color-status-red)";
       warn.style.fontWeight = "var(--weight-semibold)";
       warn.style.margin = "0 0 2px";
       sich.appendChild(warn);
-      kreuzListe(sich, positive);
-      if (beantwortet > positive.length)
-        sich.appendChild(el("p", "field-hint", `Übrige ${beantwortet - positive.length} Kontrollfragen unauffällig.`));
-    } else if (beantwortet) {
-      sich.appendChild(el("p", null, `Alle ${beantwortet} Sicherheits-Kontrollfragen unauffällig beantwortet.`));
+      kreuzListe(sich, safety.positive, "var(--color-status-red)");
+      if (safety.beantwortet > safety.positive.length)
+        sich.appendChild(el("p", "field-hint", `Übrige ${safety.beantwortet - safety.positive.length} Kontrollfragen unauffällig.`));
+    } else if (safety.beantwortet) {
+      sich.appendChild(el("p", null, `Alle ${safety.beantwortet} Sicherheits-Kontrollfragen unauffällig beantwortet.`));
     } else {
       sich.appendChild(el("p", "field-hint", "Keine Angaben."));
     }
@@ -277,6 +304,26 @@ function renderVollstaendig(container, s, therapistMode) {
       rfl.style.fontWeight = "var(--weight-semibold)";
       sich.appendChild(rfl);
     }
+
+    // ⚠ Yellow Flags & Psychometrie — therapist only (psychosoziale Prognose)
+    if (therapistMode) {
+      subKopf(sich, "⚠ Yellow Flags & Psychometrie (therapist only)");
+      const yf = el("p", null, `Yellow Flags: ${s.therapist.yellowFlags.risiko} (Score ${s.therapist.yellowFlags.score})`);
+      yf.style.color = "var(--color-status-yellow)";
+      yf.style.fontWeight = "var(--weight-medium)";
+      sich.appendChild(yf);
+      sich.appendChild(el("p", "field-hint", `PHQ-4: ${s.therapist.phq4.gesamt}/12 (${s.therapist.phq4.kategorie})`));
+    }
+
+    // 🟢 Green Flags — günstige Zeichen (deterministisch, konservativ)
+    const green = computeGreenFlags(a, s, safety);
+    if (green.length) {
+      subKopf(sich, "🟢 Green Flags — günstige Zeichen");
+      kreuzListe(sich, green, "var(--color-status-green)");
+    }
+
+    // Risikoprofil (Ampel + Technikwahl) — therapist only, direkt beim Flags-Block.
+    if (therapistMode) renderRisikoprofil(container, s.therapist.risikoprofil);
 
     // ── 02 · AKTUELLE BESCHWERDEN (Fließtext + Vertiefung) ──
     const W_TEXT_IDS = ["HB-001", "HB-003", "HB-004", "HB-005", "HB-006", "HB-007", "HB-008", "HB-009", "HB-010", "HB-011", "HB-012", "HB-013"];
@@ -425,25 +472,53 @@ function renderVollstaendig(container, s, therapistMode) {
     });
     let sysCount = 0;
     let letter = 0;
-    sysGruppen.forEach((grp) => {
-      const ids = idsInGruppe(grp).filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
-      if (!ids.length) return;
+    // Darm-/Mikrobiom-Vertiefung (D4) gehört fachlich zu den Organsystemen —
+    // sie wird direkt hinter „Darm, Kolon & unterer GI-Trakt" einsortiert.
+    const darmIds = idsInGruppe("Vitalmedizin").filter((id) => id === "DARM-GATE" || id.startsWith("D4-"));
+    let darmEingefuegt = false;
+    const renderDarmVertiefung = () => {
+      if (darmEingefuegt) return;
+      darmEingefuegt = true;
+      const offen = darmIds.filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
+      if (!offen.length) return;
       const buchstabe = String.fromCharCode(97 + letter++);
-      const sysName = grp.replace("Systemanamnese: ", "");
-      const gateId = ids.find((id) => id.startsWith("SYSG-"));
-      // System ohne Beschwerden („Nein" am Gate, sonst nichts): eine Zeile genügt.
-      if (gateId && a[gateId] === "nein" && ids.length === 1) {
-        const z = el("p", "field-hint", `${buchstabe}) ${sysName}: keine Beschwerden.`);
+      if (a["DARM-GATE"] === false && offen.length === 1 && offen[0] === "DARM-GATE") {
+        const z = el("p", "field-hint", `${buchstabe}) Darmgesundheit & Mikrobiom (Vertiefung): auf Wunsch übersprungen.`);
         z.style.margin = "2px 0";
         sys.appendChild(z);
-        consumed.add(gateId);
+        consumed.add("DARM-GATE");
         sysCount++;
         return;
       }
-      subKopf(sys, `${buchstabe}) ${sysName}`);
-      ids.forEach((id) => zeige(sys, id));
+      subKopf(sys, `${buchstabe}) Darmgesundheit & Mikrobiom (Vertiefung)`);
+      offen.forEach((id) => {
+        if (id === "DARM-GATE") consumed.add(id);
+        else zeige(sys, id);
+      });
       sysCount++;
+    };
+    sysGruppen.forEach((grp) => {
+      const sysName = grp.replace("Systemanamnese: ", "");
+      const ids = idsInGruppe(grp).filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
+      if (ids.length) {
+        const buchstabe = String.fromCharCode(97 + letter++);
+        const gateId = ids.find((id) => id.startsWith("SYSG-"));
+        // System ohne Beschwerden („Nein" am Gate, sonst nichts): eine Zeile genügt.
+        if (gateId && a[gateId] === "nein" && ids.length === 1) {
+          const z = el("p", "field-hint", `${buchstabe}) ${sysName}: keine Beschwerden.`);
+          z.style.margin = "2px 0";
+          sys.appendChild(z);
+          consumed.add(gateId);
+          sysCount++;
+        } else {
+          subKopf(sys, `${buchstabe}) ${sysName}`);
+          ids.forEach((id) => zeige(sys, id));
+          sysCount++;
+        }
+      }
+      if (sysName.startsWith("Darm")) renderDarmVertiefung();
     });
+    renderDarmVertiefung(); // Fallback: falls das Darm-System selbst leer war
     if (!sysCount) sys.appendChild(el("p", "field-hint", "Nicht erhoben (Fokus-Stufe) oder ohne Angaben."));
 
     // ── 11 · TRINKVERHALTEN & ERNÄHRUNG ──
@@ -460,6 +535,7 @@ function renderVollstaendig(container, s, therapistMode) {
     const soz = sektionNr(container, ++nr, "Sozialanamnese & Psyche");
     let n13 = zeigeAlle(soz, ["PMH-015", "PMH-016", "PMH-017"]);
     n13 += zeigeAlle(soz, idsInGruppe("Psychosozial").filter((id) => !id.startsWith("PHQ4-")));
+    n13 += zeigeAlle(soz, idsInGruppe("Vitalität & Faktoren")); // eingewobene Relations-/Rise-Fragen
     idsInGruppe("Psychosozial").forEach((id) => {
       if (id.startsWith("PHQ4-")) consumed.add(id); // therapist_only — nie im Patiententext
     });
@@ -470,31 +546,31 @@ function renderVollstaendig(container, s, therapistMode) {
     const n14 = zeigeAlle(schlaf, idsInGruppe("Vitalmedizin").filter((id) => id.startsWith("D1-")));
     if (!n14) schlaf.appendChild(el("p", "field-hint", "Nicht erhoben."));
 
-    // ── 15 · VITALMEDIZIN-VERTIEFUNG (Hormone / Darm / Immun / Licht) ──
-    const vm = sektionNr(container, ++nr, "Vitalmedizin-Vertiefung");
-    let n15 = 0;
-    const vmBlock = (titel, ids, gateId) => {
+    // ── 15–17 · HORMONE / IMMUNSYSTEM / LICHT — je eigener Abschnitt ──
+    // (Kein Sammel-Titel „Vitalmedizin-Vertiefung" mehr; Darm ist als
+    // Organthema in die Systemanamnese (Abschnitt 10) einsortiert.)
+    const vertiefungsAbschnitt = (titel, ids, gateId) => {
+      const card = sektionNr(container, ++nr, titel);
       const offen = ids.filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
-      if (!offen.length) return;
-      subKopf(vm, titel);
-      if (gateId && a[gateId] === false && offen.length === 1 && offen[0] === gateId) {
-        vm.appendChild(el("p", "field-hint", "Bereich auf Wunsch übersprungen."));
-        consumed.add(gateId);
-      } else {
-        offen.forEach((id) => {
-          // Gate-„Ja" selbst ist Rauschen — nur die Inhalte zeigen.
-          if (id === gateId || id === "LR-OPT") consumed.add(id);
-          else zeige(vm, id);
-        });
+      if (!offen.length) {
+        card.appendChild(el("p", "field-hint", "Nicht erhoben (nur in der Tiefenanalyse)."));
+        return;
       }
-      n15++;
+      if (gateId && a[gateId] === false && offen.length === 1 && offen[0] === gateId) {
+        card.appendChild(el("p", "field-hint", "Bereich auf Wunsch übersprungen."));
+        consumed.add(gateId);
+        return;
+      }
+      offen.forEach((id) => {
+        // Gate-„Ja" selbst ist Rauschen — nur die Inhalte zeigen.
+        if (id === gateId || id === "LR-OPT") consumed.add(id);
+        else zeige(card, id);
+      });
     };
     const vmIds = idsInGruppe("Vitalmedizin");
-    vmBlock("Hormone & Stoffwechsel", vmIds.filter((id) => id === "HOR-GATE" || id.startsWith("D2-") || id.startsWith("D3-")), "HOR-GATE");
-    vmBlock("Darmgesundheit & Mikrobiom", vmIds.filter((id) => id === "DARM-GATE" || id.startsWith("D4-")), "DARM-GATE");
-    vmBlock("Immunsystem & Entzündung", vmIds.filter((id) => id === "IMM-GATE" || id.startsWith("IMM-")), "IMM-GATE");
-    vmBlock("Licht & Rhythmus", idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "LICHT-GATE");
-    if (!n15) vm.appendChild(el("p", "field-hint", "Nicht erhoben (nur in der Tiefenanalyse)."));
+    vertiefungsAbschnitt("Hormone & Stoffwechsel", vmIds.filter((id) => id === "HOR-GATE" || id.startsWith("D2-") || id.startsWith("D3-")), "HOR-GATE");
+    vertiefungsAbschnitt("Immunsystem & Entzündung", vmIds.filter((id) => id === "IMM-GATE" || id.startsWith("IMM-")), "IMM-GATE");
+    vertiefungsAbschnitt("Licht & Rhythmus", idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "LICHT-GATE");
 
     // ── 16 · BEFUNDE & DOKUMENTE ──
     const bef = sektionNr(container, ++nr, "Befunde & Dokumente");
@@ -604,16 +680,8 @@ function renderVollstaendig(container, s, therapistMode) {
     f.appendChild(el("p", "field-hint", "Eltern-Fragebogen — die Einordnung erfolgt durch das Kinderosteopathie-Team."));
   }
 
-  if (therapistMode) {
-    const t = sektion(container, "Therapist only — Psychometrie & Sicherheit");
-    if (s.therapist.redFlags.length) {
-      t.appendChild(el("p", null, "⚠️ Red Flags: " + s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", ")));
-    }
-    t.appendChild(el("p", "field-hint", `PHQ-4: ${s.therapist.phq4.gesamt}/12 (${s.therapist.phq4.kategorie})`));
-    t.appendChild(el("p", "field-hint", `Yellow Flags: ${s.therapist.yellowFlags.risiko} (Score ${s.therapist.yellowFlags.score})`));
-
-    renderRisikoprofil(container, s.therapist.risikoprofil);
-  }
+  // (Red/Yellow Flags, Psychometrie & Risikoprofil stehen jetzt gebündelt in
+  // Abschnitt 01 „Risikoprofil & Flags" — kein separater Endblock mehr.)
 }
 
 const AMPEL_FARBE = { rot: "var(--color-status-red)", gelb: "var(--color-status-yellow)", gruen: "var(--color-status-green)" };
@@ -805,10 +873,12 @@ function renderKompakt(container, s, therapistMode) {
   if (kopfMeta.length) kopf.appendChild(el("p", "field-hint", kopfMeta.join(" · ")));
   container.appendChild(kopf);
 
-  // Sicherheit zuerst
+  // Sicherheit zuerst — dann günstige Zeichen
   if (therapistMode && s.therapist.redFlags.length)
     absatz("⚠️ Red Flags", s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "));
   if (s.warnzeichen && s.warnzeichen.length) absatz("⚠ Warnzeichen", s.warnzeichen.join(", "));
+  const green = computeGreenFlags(a, s, safetyStatus(a));
+  if (green.length) absatz("🟢 Green Flags", green.join(" · "));
 
   // Beschwerden als je ein lesbarer Satz
   const beschTexte = s.beschwerden.map((b) => {

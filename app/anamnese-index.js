@@ -27,6 +27,8 @@ import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEU
 import { GELENKE_BAUM } from "../data/A06_gelenke_baum.js";
 import { SYSTEMISCHE_BAUM } from "../data/A07_systemisch_baum.js";
 import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE } from "../data/A16_saeugling_eltern.js";
+import { FAKTOREN_WOVEN_FRAGEN } from "./faktoren-mapping.js";
+import { ABSOLUTE_RED_FLAGS } from "../data/cdss/00_red_flags.js";
 
 function normOpt(opt) {
   return typeof opt === "string" ? { value: opt, label: opt } : opt;
@@ -93,6 +95,19 @@ Object.values(SYSTEMISCHE_BAUM).forEach((entry) => {
   (entry.verzweigung || []).forEach((r) => (r.fragen || []).forEach((q) => add(q, grp)));
 });
 addList(ENDOKRIN_DEEP_FRAGEN, "Systemanamnese: Endokrin & Stoffwechsel");
+
+// 7-Faktoren-Fragen, die in den Vitalmedizin-Schritt eingewoben sind
+// (Relations/Rise) — damit auch diese Antworten in der vollständigen
+// Anamnese erscheinen und im Regelwerk-Fragenkatalog stehen.
+addList(FAKTOREN_WOVEN_FRAGEN, "Vitalität & Faktoren");
+
+// Sicherheits-Kontrollfragen (Red-Flag-Screening RF001–RF008) — Feldname im
+// Datenmodul ist `text` (nicht `frage`), daher direkte Registrierung.
+ABSOLUTE_RED_FLAGS.forEach((rf) =>
+  (rf.questions || []).forEach((q) => {
+    INDEX[q.id] = { label: q.text, type: q.type, optionsMap: {}, group: "Sicherheitsfragen" };
+  })
+);
 
 // Säuglings-Anamnese (Eltern-Fremdanamnese, A16) — gruppiert je Abschnitt.
 addList(PATIENT_TYP_FRAGEN, "Für wen?");
