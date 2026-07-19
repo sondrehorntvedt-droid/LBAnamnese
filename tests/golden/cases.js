@@ -115,4 +115,18 @@ export const GOLDEN_CASES = [
     regionen: ["GYNAEKOLOGIE"],
     answers: { "GYN-006": "ja", "GYN-SS-004": true },
   },
+  {
+    id: "GC-15",
+    name: "Knie: heiß + gerötet + Fieber (septische Arthritis)",
+    erwartung: "KNI-E-001+KNI-E-002=ja muss den Notfall-Red-Flag septische Arthritis auslösen.",
+    regionen: ["KNIE"],
+    answers: { "KNI-002": true, "KNI-E-001": true, "KNI-E-002": true },
+  },
+  {
+    id: "GC-16",
+    name: "Handgelenk: Sturz + Tabatière-Schmerz (Skaphoid)",
+    erwartung: "HG-003=ja + HG-D-001=ja muss den Skaphoidfraktur-Red-Flag auslösen.",
+    regionen: ["HANDGELENK"],
+    answers: { "HG-003": true, "HG-D-001": true },
+  },
 ];

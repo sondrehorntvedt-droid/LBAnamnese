@@ -71,6 +71,7 @@ const REGION_CONTEXT_BUILDERS = {
   ELLBOGEN: (a) => ({
     schmerz_lateral: a["ELL-001"] === "außen (lateraler Epicondylus)",
     kribbeln_ulnar: a["ELL-004"] === true,
+    bursitis_septisch_verdacht: a["ELL-005"] === true,
   }),
   UNTERARM: (a) => ({
     trauma: a["UFA-002"] === true,
@@ -80,10 +81,14 @@ const REGION_CONTEXT_BUILDERS = {
     schmerz_radial: includesVal(a["HG-001"], "radial/daumenseitig"),
     schmerz_ulnar: includesVal(a["HG-001"], "ulnar/kleinfingerseitig"),
     trauma: a["HG-003"] === true,
+    // Sturz auf die Hand + Tabatière-Druckschmerz: Skaphoidfraktur ist im
+    // Erst-Röntgen häufig unsichtbar — klinischer Verdacht zählt.
+    skaphoid_verdacht: a["HG-003"] === true && a["HG-D-001"] === true,
   }),
   HAND_FINGER: (a) => ({
     morgensteifigkeit: a["HAF-002"] === true,
     schnappender_finger: a["HAF-004"] === true,
+    finger_infekt_verdacht: a["HAF-005"] === true,
   }),
   HWS: (a) => ({
     ausstrahlung_arm: a["HWS-002"] === true,
@@ -130,10 +135,17 @@ const REGION_CONTEXT_BUILDERS = {
     trauma_knie: a["KNI-005"] === true,
     schmerz_anterior: includesVal(a["KNI-001"], "vorne (Kniescheibe)"),
     knie_schwellung: a["KNI-002"] === true,
+    // Heißes, gerötetes Knie + Fieber = septische Arthritis bis zum Beweis des Gegenteils.
+    knie_septisch_verdacht: a["KNI-E-001"] === true && a["KNI-E-002"] === true,
+    // Ottawa Knee Rule (Stiell et al. 1995): Trauma + fehlende Belastbarkeit → Röntgen.
+    knie_trauma_nicht_belastbar: a["KNI-005"] === true && a["KNI-B-003"] === false,
   }),
   OSG: (a) => ({
     trauma_osg: a["OSG-001"] === true,
     wiederholt_umknicken: a["OSG-005"] === true,
+    // Ottawa Ankle Rules (Stiell et al. 1992): Trauma + fehlende Belastbarkeit → Röntgen.
+    osg_nicht_belastbar: a["OSG-001"] === true && a["OSG-003"] === false,
+    achillesriss_verdacht: a["OSG-006"] === true,
   }),
   USG: (a) => ({
     zustand_nach_fraktur: a["USG-002"] === true,

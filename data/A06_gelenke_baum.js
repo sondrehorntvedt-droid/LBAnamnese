@@ -264,7 +264,8 @@ export const GELENKE_BAUM = {
       { id: "ELL-001", frage: "Wo ist der Schmerzschwerpunkt?", type: "single_choice", options: ["außen (lateraler Epicondylus)", "innen (medialer Epicondylus)", "hinter dem Ellbogen (Olekranon)", "vorne (Ellenbeuge)", "diffus"] },
       { id: "ELL-002", frage: "Schmerzt das Greifen, Tippen oder Schrauben?", type: "yes_no" },
       { id: "ELL-003", frage: "Kann der Ellbogen vollständig gestreckt/gebeugt werden?", type: "single_choice", options: ["vollständig", "Streckdefizit", "Beugedefizit", "beides eingeschränkt"] },
-      { id: "ELL-004", frage: "Kribbeln oder Taubheit in Ringfinger oder kleinem Finger?", type: "yes_no" }
+      { id: "ELL-004", frage: "Kribbeln oder Taubheit in Ringfinger oder kleinem Finger?", type: "yes_no" },
+      { id: "ELL-005", frage: "Ist der Ellbogen hinten heiß, gerötet und prall geschwollen (evtl. mit Fieber)?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "schmerz_lateral", op: "==", wert: true }, cdss_gewicht: { epikondylalgie_lateral: +4, radialis_kompressionssyndrom: +2 },
@@ -281,6 +282,10 @@ export const GELENKE_BAUM = {
       },
       { bedingung: { feld: "alter", op: "<=", wert: 16 }, cdss_gewicht: { epikondylus_avulsion: +3, morbus_panner: +2 },
         fragen: [{ id: "ELL-D-001", frage: "Sport mit Wurf- oder Schlagbewegungen (Baseball, Tennis, Handball)?", type: "yes_no" }] }
+    ],
+    red_flags: [
+      { bedingung: { feld: "bursitis_septisch_verdacht", op: "==", wert: true }, cdss_gewicht: { septische_bursitis_olecrani: +4 },
+        hinweis: "Heiße, gerötete, pralle Schwellung am Olekranon → Verdacht septische Bursitis: ärztliche Abklärung vor jeder Behandlung" }
     ]
   },
 
@@ -331,6 +336,10 @@ export const GELENKE_BAUM = {
           { id: "HG-D-001", frage: "Druckschmerz in der Tabatière (Grübchen zw. Daumen-Strecksehnen)?", type: "yes_no" }
         ]
       }
+    ],
+    red_flags: [
+      { bedingung: { feld: "skaphoid_verdacht", op: "==", wert: true }, cdss_gewicht: { skaphoidfraktur: +5 },
+        hinweis: "Sturz auf die Hand + Tabatière-Druckschmerz → Skaphoidfraktur-Verdacht (im Erst-Röntgen oft unsichtbar!): Bildgebung/CT und Ruhigstellung bis zum Ausschluss" }
     ]
   },
 
@@ -344,7 +353,8 @@ export const GELENKE_BAUM = {
       { id: "HAF-001", frage: "Welche Finger sind betroffen?", type: "multiple_choice", options: ["Daumen", "Zeigefinger", "Mittelfinger", "Ringfinger", "Kleinfinger", "mehrere"] },
       { id: "HAF-002", frage: "Morgensteifigkeit der Finger (>30 min)?", type: "yes_no" },
       { id: "HAF-003", frage: "Schwellungen oder Deformierungen der Gelenke?", type: "yes_no" },
-      { id: "HAF-004", frage: "Schnappender oder blockierender Finger?", type: "yes_no" }
+      { id: "HAF-004", frage: "Schnappender oder blockierender Finger?", type: "yes_no" },
+      { id: "HAF-005", frage: "Ist ein Finger stark geschwollen, gerötet und pochend schmerzhaft (evtl. nach Stich-, Biss- oder Schnittverletzung)?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "morgensteifigkeit", op: "==", wert: true }, cdss_gewicht: { rheumatoide_arthritis: +4, psoriasis_arthritis: +3 },
@@ -359,6 +369,10 @@ export const GELENKE_BAUM = {
         fragen: [{ id: "HAF-D-001", frage: "Knötelartige Verdickungen an den Fingergelenken?", type: "yes_no" }] },
       { bedingung: { feld: "trauma", op: "==", wert: true }, cdss_gewicht: { fingerfraktur: +3, bandruptur_finger: +3 },
         fragen: [{ id: "HAF-E-001", frage: "Welcher Finger, wie ist es passiert? (Klemmen, Umknicken, Sportverletzung)", type: "textarea" }] }
+    ],
+    red_flags: [
+      { bedingung: { feld: "finger_infekt_verdacht", op: "==", wert: true }, cdss_gewicht: { beugesehnenphlegmone: +5 },
+        hinweis: "Stark geschwollener, geröteter, pochender Finger → Verdacht eitrige Beugesehnenscheiden-Infektion (Kanavel-Zeichen): handchirurgischer NOTFALL, sofort Klinik" }
     ]
   },
 
@@ -668,6 +682,12 @@ export const GELENKE_BAUM = {
           { id: "KNI-E-002", frage: "Fieber oder allgemeines Krankheitsgefühl dazu?", type: "yes_no" }
         ]
       }
+    ],
+    red_flags: [
+      { bedingung: { feld: "knie_septisch_verdacht", op: "==", wert: true }, cdss_gewicht: { septische_arthritis: +5 },
+        hinweis: "Heißes, gerötetes Knie mit Fieber → Verdacht septische Arthritis: NOTFALL, sofortige ärztliche Abklärung (Gelenkpunktion), keine manuelle Behandlung" },
+      { bedingung: { feld: "knie_trauma_nicht_belastbar", op: "==", wert: true }, cdss_gewicht: { knie_fraktur: +4 },
+        hinweis: "Knietrauma ohne Belastbarkeit (Ottawa Knee Rule, Stiell 1995) → Röntgen-Abklärung vor jeder Behandlung" }
     ]
   },
 
@@ -682,7 +702,8 @@ export const GELENKE_BAUM = {
       { id: "OSG-002", frage: "Schwellung oder Bluterguss am Sprunggelenk?", type: "yes_no" },
       { id: "OSG-003", frage: "Kann der Fuß belastet werden?", type: "yes_no" },
       { id: "OSG-004", frage: "Schmerzt die Außenseite oder Innenseite?", type: "single_choice", options: ["außen (lateral)", "innen (medial)", "vorne", "hinten (Achillessehne)", "gesamt"] },
-      { id: "OSG-005", frage: "Knicken Sie immer wieder um (wiederholtes Umknicken, Gefühl der Instabilität)?", type: "yes_no" }
+      { id: "OSG-005", frage: "Knicken Sie immer wieder um (wiederholtes Umknicken, Gefühl der Instabilität)?", type: "yes_no" },
+      { id: "OSG-006", frage: "Gab es einen plötzlichen Schlag oder Knall in Wade/Ferse (wie ein Peitschenhieb), evtl. mit Kraftverlust beim Abstoßen?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "trauma_osg", op: "==", wert: true }, cdss_gewicht: { bss_ruptur_lateral: +4, osg_fraktur: +3 },
@@ -694,6 +715,12 @@ export const GELENKE_BAUM = {
       { bedingung: { feld: "wiederholt_umknicken", op: "==", wert: true }, cdss_gewicht: { osg_instabilitaet_chronisch: +4 } },
       { bedingung: { feld: "alter", op: ">=", wert: 50 }, cdss_gewicht: { osg_arthrose: +3 },
         fragen: [{ id: "OSG-C-001", frage: "Anlaufschmerz, Steifigkeit morgens im Knöchel?", type: "yes_no" }] }
+    ],
+    red_flags: [
+      { bedingung: { feld: "osg_nicht_belastbar", op: "==", wert: true }, cdss_gewicht: { osg_fraktur: +4 },
+        hinweis: "Sprunggelenkstrauma ohne Belastbarkeit (Ottawa Ankle Rules, Stiell 1992) → Röntgen-Abklärung vor jeder Behandlung" },
+      { bedingung: { feld: "achillesriss_verdacht", op: "==", wert: true }, cdss_gewicht: { achillessehnenruptur: +5 },
+        hinweis: "Peitschenhieb-Ereignis in Wade/Ferse → Verdacht Achillessehnenruptur (Thompson-Test): zeitnah orthopädisch abklären, nicht dehnen/mobilisieren" }
     ]
   },
 
