@@ -94,4 +94,15 @@ export const VITALSTOFF_REGELN = [
   { id: "VS-ABNEHMEN", wenn: { feld: "ERN-032", op: "==", wert: "ja_deutlich" },
     grund: "Deutlicher Abnehm-Wunsch",
     beratung: ["Proteinzufuhr sichern (Muskelerhalt), Krafttraining koppeln, Gewichtsverlauf/Taille als Verlaufsmarker"] },
+
+  // ── Protein / Regeneration / Schlafhygiene (Lifestyle-Beratung) ──
+  { id: "VS-PROTEIN-NIEDRIG", wenn: { feld: "ERN-T-010", op: "==", wert: "selten" },
+    grund: "Wenig Eiweiß pro Mahlzeit",
+    beratung: ["Protein pro Mahlzeit erhöhen (Muskelerhalt; besonders relevant beim Abnehmen und mit dem Alter)"] },
+  { id: "VS-KOFFEIN-SPAET", wenn: { feld: "D1-015", op: "==", wert: "spaet" },
+    grund: "Spätes Koffein (nach 16 Uhr)",
+    beratung: ["Koffein-Cutoff früher legen (Schlafqualität) — bei Schlafproblemen prüfen"] },
+  { id: "VS-BILDSCHIRM-NACHT", wenn: { feld: "D1-014", op: "==", wert: "immer" },
+    grund: "Helle Bildschirme direkt vor dem Schlaf",
+    beratung: ["Bildschirm-/Lichtexposition am Abend reduzieren (Einschlafen/Circadian)"] },
 ];

@@ -136,4 +136,15 @@ export const GOLDEN_CASES = [
     regionen: [],
     answers: { "ERN-010": ["vegan"], "ERN-021": ["ppi", "metformin"], "ERN-020": "selten", "ERN-006": "nie" },
   },
+  {
+    id: "GC-18",
+    name: "7 Faktoren: schlechter Schlaf senkt Rhythm & Re-Energize",
+    erwartung: "Rhythm nutzt jetzt Einschlafen/Durchschlafen/Erholt/Konsistenz; Re-Energize nutzt Schläfrigkeit/non-refreshing/Brain-Fog — beide deutlich unter Mitte.",
+    regionen: [],
+    answers: {
+      "D1-001": "5bis6", "D1-002": "schlecht", "D1-003": "haeufig", "D1-004": "haeufig",
+      "D1-005": "selten", "D1-013": "unregelmaessig", "D1-007": "stark", "D1-009": true,
+      "D1-011": "moderat", "D1-008": 3,
+    },
+  },
 ];

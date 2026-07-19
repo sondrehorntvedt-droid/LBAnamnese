@@ -58,20 +58,27 @@ function rangeScore(answers) {
 }
 
 function rhythmScore(answers) {
+  // Rhythm = Schlaf & zirkadiane Ordnung. Nutzt jetzt ALLE bereits erhobenen
+  // Schlaf-Signale (D1-001…005 + Konsistenz D1-013), nicht nur Dauer+Qualität.
   const qual = scoreFromMap(answers["D1-002"], {
-    sehr_gut: 100,
-    gut: 72,
-    schlecht: 38,
-    sehr_schlecht: 12,
+    sehr_gut: 100, gut: 72, schlecht: 38, sehr_schlecht: 12,
   });
   const dauer = scoreFromMap(answers["D1-001"], {
-    unter5: 25,
-    "5bis6": 55,
-    "6bis7": 78,
-    "7bis8": 100,
-    ueber8: 85,
+    unter5: 25, "5bis6": 55, "6bis7": 78, "7bis8": 100, ueber8: 85,
   });
-  const teile = [qual, dauer].filter((v) => v != null);
+  const einschlaf = scoreFromMap(answers["D1-003"], {
+    nie: 100, selten: 75, haeufig: 40, fast_immer: 15,
+  });
+  const durchschlaf = scoreFromMap(answers["D1-004"], {
+    nie: 100, selten: 75, haeufig: 40, sehr_haeufig: 15,
+  });
+  const erholt = scoreFromMap(answers["D1-005"], {
+    fast_immer: 100, meistens: 75, selten: 40, nie: 12,
+  });
+  const konsistenz = scoreFromMap(answers["D1-013"], {
+    sehr_regelmaessig: 100, eher_regelmaessig: 72, unregelmaessig: 40, sehr_unregelmaessig: 15,
+  });
+  const teile = [qual, dauer, einschlaf, durchschlaf, erholt, konsistenz].filter((v) => v != null);
   if (!teile.length) return null;
   return clamp(teile.reduce((a, b) => a + b, 0) / teile.length);
 }
@@ -102,8 +109,23 @@ function regulationScore(answers) {
 }
 
 function reEnergizeScore(answers) {
-  if (typeof answers["D1-008"] === "number") return clamp(answers["D1-008"] * 10);
-  return null;
+  // Re-Energize = Tagesenergie/Regeneration. Neben der Energie-VAS (D1-008)
+  // fließen die bereits erhobenen Signale Tagesschläfrigkeit (D1-007),
+  // non-refreshing sleep (D1-009) und Brain Fog (D1-011) ein.
+  const teile = [];
+  if (typeof answers["D1-008"] === "number") teile.push(clamp(answers["D1-008"] * 10));
+  const schlaefrig = scoreFromMap(answers["D1-007"], {
+    nicht: 100, leicht: 78, moderat: 50, stark: 28, sehr_stark: 10,
+  });
+  if (schlaefrig != null) teile.push(schlaefrig);
+  if (answers["D1-009"] === true) teile.push(25);
+  else if (answers["D1-009"] === false) teile.push(100);
+  const brainfog = scoreFromMap(answers["D1-011"], {
+    nein: 100, leicht: 70, moderat: 45, stark: 20,
+  });
+  if (brainfog != null) teile.push(brainfog);
+  if (!teile.length) return null;
+  return clamp(teile.reduce((a, b) => a + b, 0) / teile.length);
 }
 
 function relationsScore(answers) {

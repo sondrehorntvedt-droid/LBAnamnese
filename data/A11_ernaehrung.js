@@ -364,4 +364,102 @@ export const ERNAEHRUNG_TIEFE_FRAGEN = [
     required: false,
     placeholder: "z.B. nach Brot müde und aufgebläht; nach Milchprodukten Hautunreinheiten…",
   },
+  // ── Protein & Glukose (Grundlage: S. Phillips & G. Lyon — Protein/Muskel;
+  //    C. Means — metabolische Gesundheit; J. Inchauspé — Mahlzeitenreihenfolge)
+  {
+    id: "ERN-T-010",
+    frage: "Essen Sie zu jeder Hauptmahlzeit eine gute Eiweißquelle (z.B. Fleisch, Fisch, Eier, Hülsenfrüchte, Quark)?",
+    type: "single_choice",
+    section: "Protein & Glukose",
+    required: false,
+    hint: "Proteinzufuhr ist zentral für Muskelerhalt (v.a. beim Abnehmen und mit dem Alter).",
+    options: [
+      { value: "immer", label: "Ja, bei jeder Mahlzeit" },
+      { value: "meistens", label: "Meistens" },
+      { value: "selten", label: "Eher selten / wenig Eiweiß" },
+    ],
+  },
+  {
+    id: "ERN-T-011",
+    frage: "Essen Sie tendenziell zuerst Gemüse/Eiweiß und die Kohlenhydrate (Brot, Reis, Nudeln, Süßes) danach?",
+    type: "single_choice",
+    section: "Protein & Glukose",
+    required: false,
+    hint: "Reihenfolge beeinflusst den Blutzuckeranstieg.",
+    options: [
+      { value: "ja", label: "Ja, meistens" },
+      { value: "egal", label: "Achte nicht darauf" },
+      { value: "kh_zuerst", label: "Eher Kohlenhydrate/Süßes zuerst" },
+    ],
+  },
+  {
+    id: "ERN-T-012",
+    frage: "Wie viele Ballaststoffe essen Sie (Vollkorn, Hülsenfrüchte, viel Gemüse)?",
+    type: "single_choice",
+    section: "Protein & Glukose",
+    required: false,
+    options: [
+      { value: "viel", label: "Viel / täglich" },
+      { value: "mittel", label: "Mittel" },
+      { value: "wenig", label: "Wenig — überwiegend hell/verarbeitet" },
+    ],
+  },
+  // ── Regeneration (Grundlage: A. Galpin — Erholung/Hydration; P. Attia —
+  //    Regeneration als Leistungs-/Longevity-Säule). Speist Re-Energize.
+  {
+    id: "ERN-T-020",
+    frage: "Wie viele bewusste Erholungs-/Ruhetage haben Sie pro Woche (ohne intensives Training/Belastung)?",
+    type: "single_choice",
+    section: "Regeneration",
+    required: false,
+    options: [
+      { value: "0", label: "Keine" },
+      { value: "1", label: "1 Tag" },
+      { value: "2plus", label: "2 oder mehr" },
+      { value: "zu_viele", label: "Fast nur Ruhe (kaum Belastung)" },
+    ],
+  },
+  {
+    id: "ERN-T-021",
+    frage: "Welche Regenerationsmethoden nutzen Sie regelmäßig? (Mehrfachauswahl)",
+    type: "multiple_choice",
+    section: "Regeneration",
+    required: false,
+    options: [
+      { value: "sauna", label: "Sauna / Wärme" },
+      { value: "kaelte", label: "Kälte (kalt duschen, Eisbad)" },
+      { value: "atmung", label: "Atem-/Entspannungsübungen, Meditation" },
+      { value: "natur", label: "Zeit in der Natur / Spaziergänge" },
+      { value: "massage", label: "Massage / Faszien / Dehnen" },
+      { value: "keine", label: "Keine gezielten" },
+    ],
+  },
+  // ── Biohacking (Ist-Zustand) — als Basis für spätere, individuelle
+  //    Biohack-Empfehlungen (Grundlage: D. Asprey, G. Brecka, A. Huberman).
+  {
+    id: "ERN-T-030",
+    frage: "Tracken Sie Ihre Gesundheit mit Geräten/Apps? (Mehrfachauswahl)",
+    type: "multiple_choice",
+    section: "Biohacking",
+    required: false,
+    options: [
+      { value: "wearable", label: "Wearable (Oura, WHOOP, Apple Watch, Garmin …)" },
+      { value: "cgm", label: "Glukosesensor (CGM)" },
+      { value: "blutdruck", label: "Blutdruck / Waage mit App" },
+      { value: "labor", label: "Regelmäßige Blutwert-Checks" },
+      { value: "keine", label: "Nein, nichts davon" },
+    ],
+  },
+  {
+    id: "ERN-T-031",
+    frage: "Wie viel Interesse haben Sie an konkreten Optimierungs-/Biohacking-Empfehlungen (Schlaf, Energie, Longevity)?",
+    type: "single_choice",
+    section: "Biohacking",
+    required: false,
+    options: [
+      { value: "hoch", label: "Großes Interesse" },
+      { value: "mittel", label: "Etwas Interesse" },
+      { value: "niedrig", label: "Eher wenig — lieber die Basis" },
+    ],
+  },
 ];

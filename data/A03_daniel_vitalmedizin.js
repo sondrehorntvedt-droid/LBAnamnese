@@ -157,6 +157,60 @@ export const SCHLAF_ENERGIE_FRAGEN = [
       { value: "depressiv", label: "Anhaltend deprimiert / hoffnungslos" },
       { value: "angespannt", label: "Anhaltend angespannt / ängstlich" }
     ]
+  },
+  // ── Schlafhygiene & Circadian (Grundlage: M. Walker; A. Huberman —
+  //    Schlafkonsistenz, Licht/Bildschirme, Koffein-Timing). Liefern zugleich
+  //    Stellhebel für Empfehlungen und speisen den Faktor Rhythm.
+  {
+    id: "D1-013",
+    frage: "Wie regelmäßig sind Ihre Schlafenszeiten (auch am Wochenende ähnliche Zubett-/Aufstehzeit)?",
+    type: "single_choice",
+    required: false,
+    section: "Schlafhygiene",
+    options: [
+      { value: "sehr_regelmaessig", label: "Sehr regelmäßig (± 30 min)" },
+      { value: "eher_regelmaessig", label: "Eher regelmäßig" },
+      { value: "unregelmaessig", label: "Unregelmäßig" },
+      { value: "sehr_unregelmaessig", label: "Sehr unregelmäßig / Schichtdienst" }
+    ]
+  },
+  {
+    id: "D1-014",
+    frage: "Nutzen Sie in der letzten Stunde vor dem Schlaf helle Bildschirme (Handy, TV, Laptop)?",
+    type: "single_choice",
+    required: false,
+    section: "Schlafhygiene",
+    options: [
+      { value: "nie", label: "Nie / selten" },
+      { value: "manchmal", label: "Manchmal" },
+      { value: "meistens", label: "Meistens" },
+      { value: "immer", label: "Fast immer, bis zum Einschlafen" }
+    ]
+  },
+  {
+    id: "D1-015",
+    frage: "Wann trinken Sie Ihren letzten Kaffee / Ihr letztes Koffein am Tag?",
+    type: "single_choice",
+    required: false,
+    section: "Schlafhygiene",
+    options: [
+      { value: "kein", label: "Kein Koffein" },
+      { value: "vormittags", label: "Nur vormittags (bis ~12 Uhr)" },
+      { value: "nachmittags", label: "Bis in den Nachmittag (12–16 Uhr)" },
+      { value: "spaet", label: "Auch spät nachmittags / abends (nach 16 Uhr)" }
+    ]
+  },
+  {
+    id: "D1-016",
+    frage: "Bekommen Sie morgens früh Tageslicht (kurz nach dem Aufstehen draußen / am Fenster)?",
+    type: "single_choice",
+    required: false,
+    section: "Schlafhygiene",
+    options: [
+      { value: "taeglich", label: "Ja, fast täglich" },
+      { value: "manchmal", label: "Manchmal" },
+      { value: "selten", label: "Selten / nie" }
+    ]
   }
 ];
 

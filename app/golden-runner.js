@@ -13,6 +13,7 @@
 import { computeRegionPfad } from "./cdss-engine.js";
 import { computeRisikoprofil } from "./risikoprofil.js";
 import { computeVitalstoffProfil } from "./vitalstoff.js";
+import { compute7FaktorenAbgeleitet } from "./faktoren-mapping.js";
 import { GOLDEN_CASES } from "../tests/golden/cases.js";
 
 /** Deterministische Normalform eines Fall-Ergebnisses (stabil sortiert). */
@@ -31,10 +32,12 @@ function bewerteFall(fall) {
 
   const risiko = computeRisikoprofil(fall.answers);
   const vitalstoff = computeVitalstoffProfil(fall.answers);
+  const faktoren = compute7FaktorenAbgeleitet(fall.answers);
   return {
     regionen,
     risikoprofil: JSON.parse(JSON.stringify(risiko)),
     vitalstoff: JSON.parse(JSON.stringify(vitalstoff)),
+    faktoren: JSON.parse(JSON.stringify(faktoren)),
   };
 }
 
