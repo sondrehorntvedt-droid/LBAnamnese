@@ -109,14 +109,14 @@ export const ANAMNESE_TIEFE_OPTIONEN = [
   {
     value: "fokus",
     label: "Fokus",
-    dauer: "≈ 8–10 Minuten",
+    dauer: "≈ 15 Minuten",
     beschreibung:
       "Konzentriert auf Ihre konkrete Beschwerde (z.B. Schulter, Knie, Rücken). Ideal, wenn das Problem klar umrissen und eher neu ist.",
   },
   {
     value: "ganzheitlich",
     label: "Ganzheitlich",
-    dauer: "≈ 20–25 Minuten",
+    dauer: "≈ 30 Minuten",
     empfohlen: true,
     beschreibung:
       "Sucht die Ursache, nicht nur das Symptom. Wir betrachten Ihre Beschwerde im Zusammenhang mit Ihren Organsystemen, systemischen Beschwerden und dem Verlauf Ihres Lebens — welche Beschwerden Sie früher hatten und wie sie mit Ihren heutigen zusammenhängen könnten. So verstehen wir, WARUM das Problem entstanden ist. Die empfohlene Tiefe für die meisten Erstbesuche.",
@@ -124,7 +124,7 @@ export const ANAMNESE_TIEFE_OPTIONEN = [
   {
     value: "tiefenanalyse",
     label: "Tiefenanalyse",
-    dauer: "≈ 40–45 Minuten",
+    dauer: "≈ 45 Minuten",
     beschreibung:
       "Maximale Tiefe inkl. funktioneller Medizin — von uns Vitalmedizin genannt: Stoffwechsel, Ernährung, Supplementierung und Hormonhaushalt. Für alle, die über die Beschwerde hinaus an Leistungsfähigkeit und Gesundheitsoptimierung arbeiten möchten — abnehmen, Muskeln aufbauen, gesund altern und den Jahren mehr Leben geben. Auch empfohlen bei komplexen, chronischen oder mehreren gleichzeitigen Beschwerden.",
   },
