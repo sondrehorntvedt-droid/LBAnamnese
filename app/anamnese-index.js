@@ -25,6 +25,7 @@ import { UPLOAD_KATEGORIEN } from "../data/A00c_uploads.js";
 import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEUFIGKEIT_OPTIONEN, THERAPIE_FREITEXT, INTERVENTION_FRAGEN } from "../data/A01b_therapie_historie.js";
 import { GELENKE_BAUM } from "../data/A06_gelenke_baum.js";
 import { SYSTEMISCHE_BAUM } from "../data/A07_systemisch_baum.js";
+import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE } from "../data/A16_saeugling_eltern.js";
 
 function normOpt(opt) {
   return typeof opt === "string" ? { value: opt, label: opt } : opt;
@@ -90,6 +91,12 @@ Object.values(SYSTEMISCHE_BAUM).forEach((entry) => {
   (entry.verzweigung || []).forEach((r) => (r.fragen || []).forEach((q) => add(q, grp)));
 });
 addList(ENDOKRIN_DEEP_FRAGEN, "Systemanamnese: Endokrin & Stoffwechsel");
+
+// Säuglings-Anamnese (Eltern-Fremdanamnese, A16) — gruppiert je Abschnitt.
+addList(PATIENT_TYP_FRAGEN, "Für wen?");
+SAEUGLING_ABSCHNITTE.forEach((abschnitt) => {
+  addList(abschnitt.fragen, "Säugling: " + abschnitt.titel);
+});
 
 // ── Beschwerde-bezogene Fragen (namespaced) ─────────────────
 addList(HAUPTBESCHWERDE_FRAGEN, "Beschwerde");

@@ -14,6 +14,7 @@ import { GELENKE_BAUM } from "../data/A06_gelenke_baum.js";
 import { SYSTEMISCHE_BAUM } from "../data/A07_systemisch_baum.js";
 import { SAFETY_TESTS, BASISTESTS, OSTEO_ROUTINE, HB002_ZU_BASIS } from "../data/A14_testbatterie.js";
 import { ABSOLUTE_RED_FLAGS, YELLOW_FLAGS, YELLOW_FLAG_RISK_LEVELS } from "../data/cdss/00_red_flags.js";
+import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE, SAEUGLING_RED_FLAGS } from "../data/A16_saeugling_eltern.js";
 import { INDEX } from "./anamnese-index.js";
 import { buildManifest } from "./manifest.js";
 
@@ -36,6 +37,11 @@ export function baueRegelwerk(version) {
       absolut: ABSOLUTE_RED_FLAGS,
       yellow_flags: YELLOW_FLAGS,
       yellow_flag_risikostufen: YELLOW_FLAG_RISK_LEVELS,
+    },
+    saeugling: {
+      patient_typ: PATIENT_TYP_FRAGEN,
+      abschnitte: SAEUGLING_ABSCHNITTE,
+      red_flags: SAEUGLING_RED_FLAGS,
     },
     umfang: buildManifest(),
   };

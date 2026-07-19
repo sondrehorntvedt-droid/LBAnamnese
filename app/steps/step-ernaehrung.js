@@ -40,6 +40,8 @@ function renderSectioned(container, fragen) {
 export function registerErnaehrungStep() {
   registerStep({
     id: "ernaehrung",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Ernährung",
     eyebrow: "Ernährung & Trinken",
     title: "Ernährung & Trinkverhalten",

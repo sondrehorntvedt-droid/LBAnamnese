@@ -5,6 +5,8 @@ import { BEGLEITSYMPTOME_INTRO, BEGLEITSYMPTOME_FRAGEN } from "../../data/A01c_b
 export function registerBegleitsymptomeStep() {
   registerStep({
     id: "begleitsymptome",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Begleitsymptome",
     eyebrow: "Begleitsymptome",
     title: BEGLEITSYMPTOME_INTRO.titel,

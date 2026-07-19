@@ -25,6 +25,8 @@ const DEEP_SECTIONS = [
 export function registerVitalmedizinStep() {
   registerStep({
     id: "vitalmedizin",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Energie & Vitalität",
     eyebrow: "Vitalmedizin",
     title: "Energie, Schlaf & Vitalität",

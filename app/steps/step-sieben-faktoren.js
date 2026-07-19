@@ -41,6 +41,8 @@ function el(tag, className, text) {
 export function registerSiebenFaktorenStep() {
   registerStep({
     id: "vitalitaetsprofil",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Ihr Vitalitätsprofil",
     eyebrow: "Ihr Profil",
     title: "Ihre 7 Faktoren der Gesundheit & Vitalität",

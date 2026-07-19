@@ -126,6 +126,8 @@ function renderZielCard(z, index) {
 export function registerZieleStep() {
   registerStep({
     id: "ziele",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Ihre Ziele",
     eyebrow: "Ihre Ziele",
     title: ZIELE_INTRO.titel,

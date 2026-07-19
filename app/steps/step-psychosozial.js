@@ -5,6 +5,8 @@ import { PSYCHOSOZIAL_INTRO, PSYCHOSOZIAL_FRAGEN } from "../../data/A05_psychoso
 export function registerPsychosozialStep() {
   registerStep({
     id: "psychosozial",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Wohlbefinden",
     eyebrow: "Wohlbefinden",
     title: PSYCHOSOZIAL_INTRO.titel,

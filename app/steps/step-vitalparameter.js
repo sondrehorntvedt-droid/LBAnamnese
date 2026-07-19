@@ -74,6 +74,8 @@ function renderWearableScaffold() {
 export function registerVitalparameterStep() {
   registerStep({
     id: "vitalparameter",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Vitalparameter",
     eyebrow: "Messwerte",
     title: VITALPARAMETER_INTRO.titel,

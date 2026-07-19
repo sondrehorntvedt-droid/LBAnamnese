@@ -242,6 +242,8 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
 export function registerBeschwerdeLoopStep() {
   registerStep({
     id: "beschwerde_loop",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Ihre Beschwerden",
     eyebrow: "Ihre Beschwerden",
     title: "Was führt Sie zu uns?",

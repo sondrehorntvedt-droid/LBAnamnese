@@ -12,6 +12,8 @@ const SICHERHEITSFRAGEN = ABSOLUTE_RED_FLAGS.flatMap((rf) => rf.questions);
 export function registerSicherheitsfragenStep() {
   registerStep({
     id: "sicherheitsfragen",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     eyebrow: "Sicherheitsfragen",
     title: "Nur ein paar wichtige Kontrollfragen",
     subtitle:

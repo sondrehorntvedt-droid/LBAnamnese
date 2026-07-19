@@ -10,6 +10,8 @@
 import { registerWelcomeStep } from "./step-welcome.js";
 import { registerStammdatenStep } from "./step-stammdaten.js";
 import { registerTiefeStep } from "./step-tiefe.js";
+import { registerPatientTypStep } from "./step-patient-typ.js";
+import { registerSaeuglingStep } from "./step-saeugling.js";
 import { registerZieleStep } from "./step-ziele.js";
 import { registerUploadStep } from "./step-uploads.js";
 import { registerBeschwerdeLoopStep } from "./step-beschwerde-loop.js";
@@ -29,6 +31,9 @@ import { registerKontoStep } from "./step-konto.js";
 registerWelcomeStep();
 registerStammdatenStep();
 registerTiefeStep();
+// Weiche Erwachsener/Säugling — direkt nach der Tiefe-Wahl (Praxis-Wunsch).
+registerPatientTypStep();
+registerSaeuglingStep();
 registerZieleStep();
 registerUploadStep();
 registerBeschwerdeLoopStep();

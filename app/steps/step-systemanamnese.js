@@ -151,6 +151,8 @@ registerRedFlagSource((answers) => MODULE.flatMap((m) => computeRegionPfad(m.key
 export function registerSystemanamneseStep() {
   registerStep({
     id: "systemanamnese",
+    // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
+    isVisible: (answers) => answers["PT-001"] !== "saeugling",
     group: "Systemanamnese",
     eyebrow: "Systemanamnese",
     title: SYSTEMANAMNESE_INTRO.titel,
