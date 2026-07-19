@@ -25,6 +25,8 @@ import { computeDarmProfil } from "../darm.js";
 import { computeImmunProfil } from "../immun.js";
 import { computeLichtProfil } from "../licht.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
+import { ABSOLUTE_RED_FLAGS } from "../../data/cdss/00_red_flags.js";
+import { THERAPIE_HISTORIE_MODALITAETEN } from "../../data/A01b_therapie_historie.js";
 import { state } from "../state.js";
 
 const FAKTOR_KEYS = ["Relief", "Range", "Rhythm", "Regulation", "Re-Energize", "Relations", "Rise"];
@@ -129,9 +131,83 @@ function qaRow(container, frage, antwort) {
   container.appendChild(row);
 }
 
-// ── Reiter 1: Vollständig — ALLES, was angekreuzt/eingegeben wurde ─────────
+// ── Bausteine für den PDF-Stil (nummerierte Abschnitte, ✓-Listen) ──────────
+
+// Nummerierter Abschnitts-Header im Stil des Praxis-Anamnesebogens.
+// Markenregel: Terracotta NUR als Struktur-/Abschnitts-Marker — genau hier.
+function sektionNr(container, nr, titel) {
+  const head = el("div");
+  head.style.display = "flex";
+  head.style.alignItems = "center";
+  head.style.gap = "10px";
+  head.style.margin = "26px 0 8px";
+  const badge = el("span", null, String(nr).padStart(2, "0"));
+  badge.style.background = "var(--color-terracotta, #E97132)";
+  badge.style.color = "#fff";
+  badge.style.borderRadius = "8px";
+  badge.style.padding = "2px 9px";
+  badge.style.fontWeight = "var(--weight-semibold)";
+  badge.style.fontSize = "var(--text-small)";
+  badge.style.flexShrink = "0";
+  head.appendChild(badge);
+  const t = el("span", null, titel.toUpperCase());
+  t.style.letterSpacing = "0.14em";
+  t.style.fontWeight = "var(--weight-semibold)";
+  t.style.fontSize = "var(--text-small)";
+  t.style.color = "var(--color-primary)";
+  head.appendChild(t);
+  container.appendChild(head);
+  const card = el("div", "card");
+  card.style.marginBottom = "6px";
+  container.appendChild(card);
+  return card;
+}
+
+// Kleine fette Zwischenüberschrift innerhalb eines Abschnitts.
+function subKopf(card, text) {
+  const h = el("div", null, text);
+  h.style.fontWeight = "var(--weight-semibold)";
+  h.style.margin = "12px 0 4px";
+  card.appendChild(h);
+  return h;
+}
+
+// ✓-Liste: zeigt nur Zutreffendes — liest sich wie der ausgefüllte
+// Papierbogen (Kreuze), nicht wie ein Formular-Dump.
+function kreuzListe(card, eintraege) {
+  const ul = el("ul");
+  ul.style.listStyle = "none";
+  ul.style.margin = "4px 0 0";
+  ul.style.padding = "0";
+  eintraege.forEach((t) => {
+    const li = el("li", null, "✓ " + t);
+    li.style.padding = "2px 0";
+    ul.appendChild(li);
+  });
+  card.appendChild(ul);
+}
+
+// ── Reiter 1: Vollständig — nummerierter Anamnesebogen (nach Praxis-PDF) ───
+// Struktur & Reihenfolge folgen dem Lindebergs-Anamnesebogen (Anamnese.pdf,
+// Abschnitte 1–15), ergänzt um die neuen Module (Schlaf, Vitalmedizin-
+// Vertiefungen, Licht & Rhythmus, Ziele). Nur Beantwortetes wird gezeigt —
+// Beschwerden als Fließtext, Symptome als ✓-Listen. Ein Auffangnetz
+// (Ergänzungen) garantiert, dass keine beantwortete Frage verloren geht.
+// Deterministisch: reine Formatierung der Antworten, keine Bewertung.
 function renderVollstaendig(container, s, therapistMode) {
   const a = state.answers;
+  const consumed = new Set(["PT-001"]); // Weiche selbst ist nicht listenswert
+  const antwortTxt = (id) => (id in a ? formatAntwort(id, a[id]) : null);
+  const zeige = (card, id, labelOverride) => {
+    if (consumed.has(id)) return false;
+    const t = antwortTxt(id);
+    if (t == null) return false;
+    consumed.add(id);
+    qaRow(card, labelOverride || (getFrage(id) ? getFrage(id).label : id), t);
+    return true;
+  };
+  const zeigeAlle = (card, ids) => ids.reduce((n, id) => n + (zeige(card, id) ? 1 : 0), 0);
+  const idsInGruppe = (gruppe) => Object.keys(INDEX).filter((id) => INDEX[id].group === gruppe);
 
   // Longitudinale Sitzungs-Historie (nur wenn mehr als die aktuelle Sitzung).
   if (s.sitzungsHistorie.length > 1) {
@@ -144,106 +220,389 @@ function renderVollstaendig(container, s, therapistMode) {
     });
   }
 
+  // ── PATIENT (Kopf, unnummeriert) ──
   const name = [s.grunddaten.vorname, s.grunddaten.nachname].filter(Boolean).join(" ");
-  if (name) {
-    const kopf = sektion(container, "Patient");
-    kopf.appendChild(el("p", null, name));
-  }
+  const kopf = el("div", "card");
+  kopf.style.borderTop = "3px solid var(--color-primary)";
+  kopf.style.marginBottom = "6px";
+  const nameEl = el("div", null, name || "Patient:in");
+  nameEl.style.fontSize = "1.3rem";
+  nameEl.style.fontWeight = "var(--weight-semibold)";
+  kopf.appendChild(nameEl);
+  const metaTeile = [];
+  if (s.grunddaten.alter != null) metaTeile.push(`${s.grunddaten.alter} Jahre`);
+  if (s.grunddaten.geschlecht) metaTeile.push(s.grunddaten.geschlecht === "m" ? "männlich" : s.grunddaten.geschlecht === "f" ? "weiblich" : s.grunddaten.geschlecht);
+  if (s.grunddaten.bmi) metaTeile.push(`BMI ${s.grunddaten.bmi}`);
+  if (s.sitzungDatum) metaTeile.push("Anamnese vom " + formatDatum(s.sitzungDatum));
+  if (metaTeile.length) kopf.appendChild(el("p", "field-hint", metaTeile.join(" · ")));
+  ["SD-001", "SD-002", "SD-003"].forEach((id) => consumed.add(id)); // im Kopf enthalten
+  zeigeAlle(kopf, idsInGruppe("Stammdaten"));
+  zeige(kopf, "PT-002", "Ausgefüllt von");
+  container.appendChild(kopf);
 
-  // Behandlungsziele (strukturiert aus meta).
-  if (s.ziele.length) {
-    const z = sektion(container, "Behandlungsziele");
-    s.ziele.forEach((ziel) => {
-      const row = el("div");
-      row.style.marginBottom = "8px";
-      row.appendChild(el("strong", null, ziel.zielText || "Ziel"));
-      row.appendChild(el("p", "field-hint", [ziel.lebensbereich, ziel.fokus, ziel.zeitrahmen].filter(Boolean).join(" · ")));
-      z.appendChild(row);
-    });
-  }
+  const saeugling = a["PT-001"] === "saeugling";
+  let nr = 0;
 
-  // Pro Beschwerde: ALLE namespaced Antworten (W-Fragen + regionsspezifischer
-  // CDSS-Deep-Dive + Vorbehandlungen), in stabiler Index-Reihenfolge.
-  s.beschwerden.forEach((b, i) => {
-    const prio = b.prioritaet ? `${b.prioritaet.kurz} ${b.prioritaet.label} · ` : "";
-    const c = sektion(container, `Beschwerde ${i + 1}: ${prio}${b.region}`);
-    let count = 0;
-    Object.keys(INDEX).forEach((id) => {
-      const key = `${b.id}::${id}`;
-      if (!(key in a)) return;
-      const txt = formatAntwort(id, a[key]);
-      if (txt == null) return;
-      qaRow(c, getFrage(id).label, txt);
-      count++;
-    });
-    if (!count) c.appendChild(el("p", "field-hint", "—"));
-    if (therapistMode && b.verdacht.length) {
-      const v = el("p", "field-hint", "CDSS-Verdacht: " + b.verdacht.slice(0, 5).map((x) => `${x.label} (${x.score})`).join(", "));
-      v.style.marginTop = "8px";
-      c.appendChild(v);
+  if (!saeugling) {
+    // ── 01 · KONTRAINDIKATIONEN & SICHERHEIT ──
+    const sich = sektionNr(container, ++nr, "Kontraindikationen & Sicherheit");
+    const positive = [];
+    let beantwortet = 0;
+    ABSOLUTE_RED_FLAGS.forEach((rf) =>
+      (rf.questions || []).forEach((q) => {
+        if (!(q.id in a)) return;
+        beantwortet++;
+        consumed.add(q.id);
+        if (a[q.id] === true) positive.push(q.text);
+      })
+    );
+    if (positive.length) {
+      const warn = el("p", null, "⚠ Auffällige Kontrollfragen:");
+      warn.style.color = "var(--color-status-red)";
+      warn.style.fontWeight = "var(--weight-semibold)";
+      warn.style.margin = "0 0 2px";
+      sich.appendChild(warn);
+      kreuzListe(sich, positive);
+      if (beantwortet > positive.length)
+        sich.appendChild(el("p", "field-hint", `Übrige ${beantwortet - positive.length} Kontrollfragen unauffällig.`));
+    } else if (beantwortet) {
+      sich.appendChild(el("p", null, `Alle ${beantwortet} Sicherheits-Kontrollfragen unauffällig beantwortet.`));
+    } else {
+      sich.appendChild(el("p", "field-hint", "Keine Angaben."));
     }
-  });
-
-  // Globaler Dump: jede beantwortete Frage aller Module, gruppiert (stabile
-  // Reihenfolge aus dem Frage-Index). PHQ-4-Rohwerte bleiben therapist_only
-  // (separater Abschnitt unten).
-  const gruppen = new Map();
-  Object.keys(INDEX).forEach((id) => {
-    if (id.startsWith("PHQ4-")) return;
-    // Beschwerde-Fragen erscheinen pro Beschwerde-Akte oben (namespaced) —
-    // globale Legacy-Kopien (z.B. HB-002) hier nicht doppeln.
-    if (INDEX[id].group === "Beschwerde") return;
-    if (!(id in a)) return;
-    const txt = formatAntwort(id, a[id]);
-    if (txt == null) return;
-    const g = INDEX[id].group || "Weitere Angaben";
-    if (!gruppen.has(g)) gruppen.set(g, []);
-    gruppen.get(g).push([INDEX[id].label, txt]);
-  });
-  gruppen.forEach((rows, g) => {
-    const card = sektion(container, g);
-    rows.forEach(([q, v]) => qaRow(card, q, v));
-  });
-
-  // Befund-Erkenntnisse aus hochgeladenen Dokumenten.
-  if (s.befundErkenntnisse && s.befundErkenntnisse.length) container.appendChild(befundErkenntnisseCard(s));
-
-  // Labor: Uploads-Hinweis + funktionelle Referenzbereiche (nur Therapeut).
-  if (s.labor.hatDaten) {
-    const lab = sektion(container, "Labor & Marker");
-    if (s.labor.uploads.length) {
-      lab.appendChild(el("p", "field-hint", `${s.labor.uploads.length} Labor-/Ernährungs-Befund(e) hochgeladen — siehe Reiter Befunde.`));
+    zeige(sich, "PMH-018"); // Schwangerschaft — sicherheitsrelevant
+    if (therapistMode && s.therapist.redFlags.length) {
+      const rfl = el("p", null, "⚠️ Ausgelöste Red Flags: " + s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "));
+      rfl.style.color = "var(--color-status-red)";
+      rfl.style.fontWeight = "var(--weight-semibold)";
+      sich.appendChild(rfl);
     }
-    if (therapistMode) {
-      const ref = el("div");
-      ref.style.marginTop = "10px";
-      ref.appendChild(el("p", "field-hint", "Funktionelle Referenzbereiche (Optimierung, enger als Laborreferenz) — Interpretationshilfe, keine Diagnostik:"));
-      FUNKTIONELLE_MARKER.forEach((g) => {
-        const gl = el("div", "section-label", g.gruppe);
-        gl.style.marginTop = "10px";
-        ref.appendChild(gl);
-        ref.appendChild(
-          tabelle(
-            ["Marker", "Laborref.", "Funktionell", "Bedeutung"],
-            g.marker.map((m) => [`${m.name}${m.einheit ? " (" + m.einheit + ")" : ""}`, m.laborRef, m.funktionell, m.hinweis])
-          )
-        );
+
+    // ── 02 · AKTUELLE BESCHWERDEN (Fließtext + Vertiefung) ──
+    const W_TEXT_IDS = ["HB-001", "HB-003", "HB-004", "HB-005", "HB-006", "HB-007", "HB-008", "HB-009", "HB-010", "HB-011", "HB-012", "HB-013"];
+    const besch = sektionNr(container, ++nr, "Aktuelle Beschwerden");
+    if (!s.beschwerden.length) besch.appendChild(el("p", "field-hint", "Keine Beschwerden erfasst."));
+    s.beschwerden.forEach((b, i) => {
+      const prio = b.prioritaet ? ` (${b.prioritaet.kurz} · ${b.prioritaet.label})` : "";
+      subKopf(besch, `Beschwerde ${i + 1} — ${b.region}${prio}`);
+      const g = (id) => {
+        const k = `${b.id}::${id}`;
+        return k in a ? formatAntwort(id, a[k]) : null;
+      };
+      // Fließtext aus den W-Fragen — liest sich wie ein Aufnahmebefund.
+      if (g("HB-001")) {
+        const z = el("p", null, `„${g("HB-001")}“`);
+        z.style.margin = "0 0 4px";
+        z.style.fontStyle = "italic";
+        besch.appendChild(z);
+      }
+      const teile = [];
+      if (g("HB-003")) teile.push(`Charakter: ${g("HB-003")}`);
+      if (g("HB-004")) teile.push(`Intensität Ø ${g("HB-004")}/10${g("HB-005") ? ` (max ${g("HB-005")}${g("HB-006") ? `, min ${g("HB-006")}` : ""})` : ""}`);
+      if (g("HB-007")) teile.push(`Beginn: ${g("HB-007")}`);
+      if (g("HB-008")) teile.push(`Verlauf: ${g("HB-008")}`);
+      if (g("HB-009")) teile.push(`Auslöser: ${g("HB-009")}`);
+      if (g("HB-010")) teile.push(`am schlimmsten: ${g("HB-010")}`);
+      if (g("HB-011")) teile.push(`lindernd: ${g("HB-011")}`);
+      if (g("HB-012")) teile.push(`verschlimmernd: ${g("HB-012")}`);
+      if (g("HB-013")) teile.push(`eigene Vermutung: „${g("HB-013")}“`);
+      if (teile.length) {
+        const fl = el("p", null, teile.join(" · ") + ".");
+        fl.style.margin = "0 0 6px";
+        fl.style.lineHeight = "1.55";
+        besch.appendChild(fl);
+      }
+      // Übrige strukturierte Antworten dieser Beschwerde (CDSS-Vertiefung etc.);
+      // Vorbehandlungen (TH-*) folgen gesammelt in Abschnitt Behandlungsanamnese.
+      Object.keys(INDEX).forEach((id) => {
+        if (W_TEXT_IDS.includes(id) || id.startsWith("TH-")) return;
+        const key = `${b.id}::${id}`;
+        if (!(key in a)) return;
+        const txt = formatAntwort(id, a[key]);
+        if (txt == null) return;
+        qaRow(besch, getFrage(id).label, txt);
       });
-      lab.appendChild(ref);
+      if (therapistMode && b.verdacht.length) {
+        const v = el("p", "field-hint", "CDSS-Verdacht: " + b.verdacht.slice(0, 5).map((x) => `${x.label} (${x.score})`).join(", "));
+        v.style.marginTop = "6px";
+        besch.appendChild(v);
+      }
+    });
+
+    // ── 03 · BEGLEITENDE SYMPTOME (✓-Liste) ──
+    const beg = sektionNr(container, ++nr, "Begleitende Symptome");
+    const begPos = [];
+    let begSonst = 0;
+    idsInGruppe("Begleitsymptome").forEach((id) => {
+      if (!(id in a)) return;
+      consumed.add(id);
+      if (a[id] === true) {
+        begPos.push(INDEX[id].label);
+        return;
+      }
+      if (a[id] === false) return; // Verneintes nicht listen — nur Kreuze
+      const txt = formatAntwort(id, a[id]);
+      if (txt != null) {
+        qaRow(beg, INDEX[id].label, txt);
+        begSonst++;
+      }
+    });
+    if (begPos.length) kreuzListe(beg, begPos);
+    if (!begPos.length && !begSonst) beg.appendChild(el("p", null, "Keine begleitenden Symptome angegeben."));
+
+    // ── 04 · VORERKRANKUNGEN ──
+    const vor = sektionNr(container, ++nr, "Vorerkrankungen");
+    const n04 = zeigeAlle(vor, ["PMH-001", "PMH-002", "PMH-001b", "PMH-CA-01", "PMH-CA-02", "PMH-CA-03", "PMH-CA-04", "PMH-CA-05", "PMH-CA-06", "PMH-CA-07"]);
+    if (!n04) vor.appendChild(el("p", null, "Keine bekannten Vorerkrankungen angegeben."));
+
+    // ── 05 · TRAUMEN & OPERATIONEN ──
+    const op = sektionNr(container, ++nr, "Traumen & Operationen");
+    const n05 = zeigeAlle(op, ["PMH-003", "PMH-004", "PMH-005", "PMH-006"]);
+    if (!n05) op.appendChild(el("p", null, "Keine Operationen oder relevanten Traumen angegeben."));
+
+    // ── 06 · MEDIKAMENTE & ALLERGIEN ──
+    const med = sektionNr(container, ++nr, "Medikamente & Allergien");
+    let n06 = zeigeAlle(med, ["PMH-007", "PMH-008"]);
+    // Blutverdünner/Kortison: bei „Ja" als rote Warnzeile (behandlungsrelevant).
+    [["PMH-009", "Blutverdünner"], ["PMH-010", "Kortison / Steroide (länger)"]].forEach(([id, label]) => {
+      if (!(id in a) || consumed.has(id)) return;
+      consumed.add(id);
+      n06++;
+      if (a[id] === true) {
+        const w = el("p", null, `⚠ ${label}: Ja`);
+        w.style.color = "var(--color-status-red)";
+        w.style.fontWeight = "var(--weight-semibold)";
+        w.style.margin = "4px 0";
+        med.appendChild(w);
+      } else {
+        qaRow(med, getFrage(id).label, formatAntwort(id, a[id]) || "Nein");
+      }
+    });
+    n06 += zeigeAlle(med, ["PMH-010b", "PMH-011", "PMH-012", "PMH-013"]);
+    if (!n06) med.appendChild(el("p", null, "Keine Medikamente oder Allergien angegeben."));
+
+    // ── 07 · FAMILIENANAMNESE ──
+    const fam = sektionNr(container, ++nr, "Familienanamnese");
+    const n07 = zeigeAlle(fam, ["PMH-014", "PMH-014b"]);
+    if (!n07) fam.appendChild(el("p", null, "Keine familiären Erkrankungen angegeben."));
+
+    // ── 08 · BEHANDLUNGSANAMNESE (pro Beschwerde) ──
+    const beh = sektionNr(container, ++nr, "Behandlungsanamnese");
+    let n08 = 0;
+    s.beschwerden.forEach((b, i) => {
+      const zeilen = [];
+      THERAPIE_HISTORIE_MODALITAETEN.forEach((mod) => {
+        const v = a[`${b.id}::${mod.id}`];
+        if (v == null || v === "") return;
+        zeilen.push([
+          mod.label,
+          formatAntwort(mod.id, v) || String(v),
+          formatAntwort(`${mod.id}-haeufigkeit`, a[`${b.id}::${mod.id}-haeufigkeit`]) || "—",
+        ]);
+      });
+      const frei = a[`${b.id}::TH-FREI`];
+      const intervention = a[`${b.id}::TH-INTERVENTION`];
+      if (!zeilen.length && !frei && !intervention) return;
+      n08++;
+      if (s.beschwerden.length > 1) subKopf(beh, `Beschwerde ${i + 1} — ${b.region}`);
+      if (zeilen.length) beh.appendChild(tabelle(["Therapie", "Erfolg", "Wie oft / wie lange"], zeilen));
+      if (frei) qaRow(beh, "Weitere Therapieversuche", String(frei));
+      if (intervention) qaRow(beh, "Interventionen", formatAntwort("TH-INTERVENTION", intervention) || "");
+    });
+    if (!n08) beh.appendChild(el("p", null, "Keine Vorbehandlungen angegeben."));
+
+    // ── 09 · VITALPARAMETER ──
+    const vit = sektionNr(container, ++nr, "Vitalparameter");
+    const n09 = zeigeAlle(vit, idsInGruppe("Vitalparameter"));
+    if (!n09) vit.appendChild(el("p", "field-hint", "Keine Messwerte erfasst."));
+
+    // ── 10 · SYSTEMANAMNESE (a–…) ──
+    const sys = sektionNr(container, ++nr, "Systemanamnese");
+    const sysGruppen = [];
+    Object.keys(INDEX).forEach((id) => {
+      const grp = INDEX[id].group || "";
+      if (grp.startsWith("Systemanamnese: ") && !sysGruppen.includes(grp)) sysGruppen.push(grp);
+    });
+    let sysCount = 0;
+    let letter = 0;
+    sysGruppen.forEach((grp) => {
+      const ids = idsInGruppe(grp).filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
+      if (!ids.length) return;
+      const buchstabe = String.fromCharCode(97 + letter++);
+      const sysName = grp.replace("Systemanamnese: ", "");
+      const gateId = ids.find((id) => id.startsWith("SYSG-"));
+      // System ohne Beschwerden („Nein" am Gate, sonst nichts): eine Zeile genügt.
+      if (gateId && a[gateId] === "nein" && ids.length === 1) {
+        const z = el("p", "field-hint", `${buchstabe}) ${sysName}: keine Beschwerden.`);
+        z.style.margin = "2px 0";
+        sys.appendChild(z);
+        consumed.add(gateId);
+        sysCount++;
+        return;
+      }
+      subKopf(sys, `${buchstabe}) ${sysName}`);
+      ids.forEach((id) => zeige(sys, id));
+      sysCount++;
+    });
+    if (!sysCount) sys.appendChild(el("p", "field-hint", "Nicht erhoben (Fokus-Stufe) oder ohne Angaben."));
+
+    // ── 11 · TRINKVERHALTEN & ERNÄHRUNG ──
+    const ern = sektionNr(container, ++nr, "Trinkverhalten & Ernährung");
+    const n11 = zeigeAlle(ern, idsInGruppe("Ernährung & Trinken"));
+    if (!n11) ern.appendChild(el("p", "field-hint", "Nicht erhoben."));
+
+    // ── 12 · SPORT & BEWEGUNG ──
+    const spo = sektionNr(container, ++nr, "Sport & Bewegung");
+    const n12 = zeigeAlle(spo, idsInGruppe("Sport & Bewegung"));
+    if (!n12) spo.appendChild(el("p", "field-hint", "Nicht erhoben."));
+
+    // ── 13 · SOZIALANAMNESE & PSYCHE ──
+    const soz = sektionNr(container, ++nr, "Sozialanamnese & Psyche");
+    let n13 = zeigeAlle(soz, ["PMH-015", "PMH-016", "PMH-017"]);
+    n13 += zeigeAlle(soz, idsInGruppe("Psychosozial").filter((id) => !id.startsWith("PHQ4-")));
+    idsInGruppe("Psychosozial").forEach((id) => {
+      if (id.startsWith("PHQ4-")) consumed.add(id); // therapist_only — nie im Patiententext
+    });
+    if (!n13) soz.appendChild(el("p", "field-hint", "Nicht erhoben."));
+
+    // ── 14 · SCHLAF & ENERGIE ──
+    const schlaf = sektionNr(container, ++nr, "Schlaf & Energie");
+    const n14 = zeigeAlle(schlaf, idsInGruppe("Vitalmedizin").filter((id) => id.startsWith("D1-")));
+    if (!n14) schlaf.appendChild(el("p", "field-hint", "Nicht erhoben."));
+
+    // ── 15 · VITALMEDIZIN-VERTIEFUNG (Hormone / Darm / Immun / Licht) ──
+    const vm = sektionNr(container, ++nr, "Vitalmedizin-Vertiefung");
+    let n15 = 0;
+    const vmBlock = (titel, ids, gateId) => {
+      const offen = ids.filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
+      if (!offen.length) return;
+      subKopf(vm, titel);
+      if (gateId && a[gateId] === false && offen.length === 1 && offen[0] === gateId) {
+        vm.appendChild(el("p", "field-hint", "Bereich auf Wunsch übersprungen."));
+        consumed.add(gateId);
+      } else {
+        offen.forEach((id) => {
+          // Gate-„Ja" selbst ist Rauschen — nur die Inhalte zeigen.
+          if (id === gateId || id === "LR-OPT") consumed.add(id);
+          else zeige(vm, id);
+        });
+      }
+      n15++;
+    };
+    const vmIds = idsInGruppe("Vitalmedizin");
+    vmBlock("Hormone & Stoffwechsel", vmIds.filter((id) => id === "HOR-GATE" || id.startsWith("D2-") || id.startsWith("D3-")), "HOR-GATE");
+    vmBlock("Darmgesundheit & Mikrobiom", vmIds.filter((id) => id === "DARM-GATE" || id.startsWith("D4-")), "DARM-GATE");
+    vmBlock("Immunsystem & Entzündung", vmIds.filter((id) => id === "IMM-GATE" || id.startsWith("IMM-")), "IMM-GATE");
+    vmBlock("Licht & Rhythmus", idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "LICHT-GATE");
+    if (!n15) vm.appendChild(el("p", "field-hint", "Nicht erhoben (nur in der Tiefenanalyse)."));
+
+    // ── 16 · BEFUNDE & DOKUMENTE ──
+    const bef = sektionNr(container, ++nr, "Befunde & Dokumente");
+    let n16 = 0;
+    if (s.befundErkenntnisse && s.befundErkenntnisse.length) {
+      subKopf(bef, "🧪 Wichtigste Befund-Erkenntnisse");
+      s.befundErkenntnisse.forEach((b) => {
+        qaRow(bef, b.fachbereich + (b.datum ? " · " + formatDatum(b.datum) : ""), b.notiz);
+      });
+      n16++;
+    }
+    n16 += zeigeAlle(bef, idsInGruppe("Befunde"));
+    n16 += zeige(bef, "PMH-019") ? 1 : 0;
+    if (s.labor.hatDaten) {
+      if (s.labor.uploads.length) {
+        bef.appendChild(el("p", "field-hint", `${s.labor.uploads.length} Labor-/Ernährungs-Befund(e) hochgeladen — siehe Reiter Befunde.`));
+      }
+      if (therapistMode) {
+        const ref = el("div");
+        ref.style.marginTop = "10px";
+        ref.appendChild(el("p", "field-hint", "Funktionelle Referenzbereiche (Optimierung, enger als Laborreferenz) — Interpretationshilfe, keine Diagnostik:"));
+        FUNKTIONELLE_MARKER.forEach((grp) => {
+          const gl = el("div", "section-label", grp.gruppe);
+          gl.style.marginTop = "10px";
+          ref.appendChild(gl);
+          ref.appendChild(
+            tabelle(
+              ["Marker", "Laborref.", "Funktionell", "Bedeutung"],
+              grp.marker.map((m) => [`${m.name}${m.einheit ? " (" + m.einheit + ")" : ""}`, m.laborRef, m.funktionell, m.hinweis])
+            )
+          );
+        });
+        bef.appendChild(ref);
+      }
+      n16++;
+    }
+    if (!n16) bef.appendChild(el("p", "field-hint", "Keine Befunde hochgeladen."));
+
+    // ── 17 · ZIELE & ERWARTUNGEN ──
+    const zieleCard = sektionNr(container, ++nr, "Ziele & Erwartungen");
+    if (s.ziele.length) {
+      s.ziele.forEach((ziel) => {
+        const row = el("div");
+        row.style.marginBottom = "8px";
+        row.appendChild(el("strong", null, ziel.zielText || "Ziel"));
+        row.appendChild(el("p", "field-hint", [ziel.lebensbereich, ziel.fokus, ziel.zeitrahmen].filter(Boolean).join(" · ")));
+        zieleCard.appendChild(row);
+      });
+    } else {
+      zieleCard.appendChild(el("p", "field-hint", "Keine Ziele erfasst."));
+    }
+
+    // ── 18 · ERGÄNZUNGEN (Auffangnetz — nichts geht verloren) ──
+    const restGruppen = new Map();
+    Object.keys(INDEX).forEach((id) => {
+      if (consumed.has(id) || id.startsWith("PHQ4-")) return;
+      const grp = INDEX[id].group || "Weitere";
+      if (grp === "Beschwerde" || grp === "Für wen?" || grp.startsWith("Säugling: ")) return;
+      if (!(id in a)) return;
+      if (formatAntwort(id, a[id]) == null) return;
+      if (!restGruppen.has(grp)) restGruppen.set(grp, []);
+      restGruppen.get(grp).push(id);
+    });
+    if (restGruppen.size) {
+      const erg = sektionNr(container, ++nr, "Ergänzungen & weitere Angaben");
+      restGruppen.forEach((ids, grp) => {
+        subKopf(erg, grp);
+        ids.forEach((id) => zeige(erg, id));
+      });
+    }
+  } else {
+    // ── Säuglings-Anamnese: Abschnitte des Eltern-Fragebogens, nummeriert ──
+    const sglGruppen = [];
+    Object.keys(INDEX).forEach((id) => {
+      const grp = INDEX[id].group || "";
+      if (grp.startsWith("Säugling: ") && !sglGruppen.includes(grp)) sglGruppen.push(grp);
+    });
+    sglGruppen.forEach((grp) => {
+      const ids = idsInGruppe(grp).filter((id) => id in a && formatAntwort(id, a[id]) != null);
+      if (!ids.length) return;
+      const card = sektionNr(container, ++nr, grp.replace("Säugling: ", ""));
+      ids.forEach((id) => zeige(card, id));
+    });
+    if (therapistMode && s.therapist.redFlags.length) {
+      const card = sektionNr(container, ++nr, "Sicherheit");
+      const rfl = el("p", null, "⚠️ Ausgelöste Red Flags: " + s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "));
+      rfl.style.color = "var(--color-status-red)";
+      rfl.style.fontWeight = "var(--weight-semibold)";
+      card.appendChild(rfl);
     }
   }
 
-  const f = sektion(container, "Vitalitätsprofil (7 Faktoren)");
-  const canvas = document.createElement("canvas");
-  canvas.style.width = "100%";
-  canvas.style.maxWidth = "300px";
-  canvas.style.display = "block";
-  canvas.style.margin = "0 auto 12px";
-  f.appendChild(canvas);
-  const chartProfil = {};
-  FAKTOR_KEYS.forEach((k) => (chartProfil[k] = s.faktoren[k] == null ? null : s.faktoren[k] / 10));
-  requestAnimationFrame(() => renderRadarChart(canvas, chartProfil));
-  f.appendChild(el("p", "field-hint", faktorenZeile(s.faktoren)));
+  // ── ZUSAMMENFASSUNG (wie PDF-Abschnitt 15) ──
+  const f = sektionNr(container, ++nr, "Zusammenfassung");
+  if (!saeugling) {
+    const canvas = document.createElement("canvas");
+    canvas.style.width = "100%";
+    canvas.style.maxWidth = "300px";
+    canvas.style.display = "block";
+    canvas.style.margin = "0 auto 12px";
+    f.appendChild(canvas);
+    const chartProfil = {};
+    FAKTOR_KEYS.forEach((k) => (chartProfil[k] = s.faktoren[k] == null ? null : s.faktoren[k] / 10));
+    requestAnimationFrame(() => renderRadarChart(canvas, chartProfil));
+    f.appendChild(el("p", "field-hint", faktorenZeile(s.faktoren)));
+  } else {
+    f.appendChild(el("p", "field-hint", "Eltern-Fragebogen — die Einordnung erfolgt durch das Kinderosteopathie-Team."));
+  }
 
   if (therapistMode) {
     const t = sektion(container, "Therapist only — Psychometrie & Sicherheit");
@@ -405,185 +764,123 @@ function banner(text, farbe, icon) {
   return b;
 }
 
-// ── Reiter 2: Kompakt — visuelles Dashboard ───────────────
+// ── Reiter 2: Kompakt — Fließtext-Zusammenfassung (½–1 A4) ─────────────────
+// Reiner, gut lesbarer Text statt Dashboard (Wunsch Sondre 20.07.2026):
+// kurze, deterministisch aus den Antworten gebaute Absätze — als portable
+// Patientenakte les- und druckbar. Keine Bewertung, nur Formatierung.
 function renderKompakt(container, s, therapistMode) {
+  const a = state.answers;
+  const fmt = (id, nsId) => {
+    const key = nsId ? `${nsId}::${id}` : id;
+    return key in a ? formatAntwort(id, a[key]) : null;
+  };
+  const absatz = (label, text) => {
+    if (!text) return;
+    const p = el("p");
+    p.style.margin = "0 0 10px";
+    p.style.lineHeight = "1.6";
+    p.appendChild(el("strong", null, label + ": "));
+    p.appendChild(document.createTextNode(text));
+    container.appendChild(p);
+  };
+
   container.appendChild(
-    el("p", "field-hint", "Überblick für Behandler & als portable Patientenakte. Oben Druck-Knopf zum Speichern/Drucken.")
+    el("p", "field-hint", "Kurzfassung als Fließtext — portable Patientenakte. Oben Druck-Knopf zum Speichern/Drucken.")
   );
 
-  // Kopf: Name + Kennzahlen als Chips
-  const head = dashCard();
-  const name = [s.grunddaten.vorname, s.grunddaten.nachname].filter(Boolean).join(" ");
-  const nameEl = el("div");
+  // Kopf: Name + Kennzahlen in einer Zeile
+  const name = [s.grunddaten.vorname, s.grunddaten.nachname].filter(Boolean).join(" ") || "Patient:in";
+  const kopfMeta = [];
+  if (s.grunddaten.alter != null) kopfMeta.push(`${s.grunddaten.alter} J.`);
+  if (s.grunddaten.geschlecht) kopfMeta.push(s.grunddaten.geschlecht === "m" ? "männlich" : s.grunddaten.geschlecht === "f" ? "weiblich" : s.grunddaten.geschlecht);
+  if (s.grunddaten.bmi) kopfMeta.push(`BMI ${s.grunddaten.bmi}`);
+  if (s.vitalwerte) kopfMeta.push(s.vitalwerte);
+  if (s.sitzungDatum) kopfMeta.push("Anamnese vom " + formatDatum(s.sitzungDatum));
+  const kopf = el("div");
+  kopf.style.marginBottom = "14px";
+  const nameEl = el("div", null, name);
   nameEl.style.fontSize = "1.25rem";
   nameEl.style.fontWeight = "var(--weight-semibold)";
-  nameEl.textContent = name || "Patient:in";
-  head.appendChild(nameEl);
-  const hRow = chipRow();
-  if (s.grunddaten.alter != null) hRow.appendChild(chip(`${s.grunddaten.alter} J.`));
-  if (s.grunddaten.geschlecht) hRow.appendChild(chip(s.grunddaten.geschlecht === "m" ? "♂ männlich" : s.grunddaten.geschlecht === "f" ? "♀ weiblich" : s.grunddaten.geschlecht));
-  if (s.grunddaten.bmi) hRow.appendChild(chip(`BMI ${s.grunddaten.bmi}`));
-  if (s.sitzungDatum) hRow.appendChild(chip("📅 " + formatDatum(s.sitzungDatum)));
-  if (s.vitalwerte) s.vitalwerte.split(" · ").forEach((v) => hRow.appendChild(chip(v, { bg: "var(--color-sage-100, #eef3ee)" })));
-  head.appendChild(hRow);
-  container.appendChild(head);
+  kopf.appendChild(nameEl);
+  if (kopfMeta.length) kopf.appendChild(el("p", "field-hint", kopfMeta.join(" · ")));
+  container.appendChild(kopf);
 
-  // Befund-Erkenntnisse (auffällige Laborwerte etc.) — sehr wichtig, oben.
-  if (s.befundErkenntnisse && s.befundErkenntnisse.length) container.appendChild(befundErkenntnisseCard(s));
+  // Sicherheit zuerst
+  if (therapistMode && s.therapist.redFlags.length)
+    absatz("⚠️ Red Flags", s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "));
+  if (s.warnzeichen && s.warnzeichen.length) absatz("⚠ Warnzeichen", s.warnzeichen.join(", "));
 
-  // Warnbanner (Red Flags therapist, dann B-Symptomatik)
-  if (therapistMode && s.therapist.redFlags.length) {
-    container.appendChild(banner("Red Flags: " + s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "), "var(--color-status-red)", "⚠️"));
-  }
-  if (s.warnzeichen && s.warnzeichen.length) {
-    container.appendChild(banner("Warnzeichen: " + s.warnzeichen.join(", "), "var(--color-status-yellow)", "⚠"));
-  }
+  // Beschwerden als je ein lesbarer Satz
+  const beschTexte = s.beschwerden.map((b) => {
+    const teile = [];
+    if (fmt("HB-004", b.id)) teile.push(`Ø ${fmt("HB-004", b.id)}/10`);
+    if (fmt("HB-007", b.id)) teile.push(`Beginn: ${fmt("HB-007", b.id)}`);
+    if (fmt("HB-008", b.id)) teile.push(`Verlauf: ${fmt("HB-008", b.id)}`);
+    if (fmt("HB-011", b.id)) teile.push(`besser durch ${fmt("HB-011", b.id)}`);
+    if (fmt("HB-012", b.id)) teile.push(`schlechter durch ${fmt("HB-012", b.id)}`);
+    const prio = b.prioritaet ? `[${b.prioritaet.kurz}] ` : "";
+    const anliegen = fmt("HB-001", b.id);
+    const kern = teile.length ? ` (${teile.join("; ")})` : "";
+    const dx = therapistMode && b.verdacht.length ? ` → V.a. ${diagnoseLabel(b.verdacht[0].label)}` : "";
+    return `${prio}${b.region}${anliegen ? ` — „${anliegen}“` : ""}${kern}${dx}`;
+  });
+  if (beschTexte.length) absatz("Beschwerden", beschTexte.join(" · "));
 
-  // Beschwerde-Karten (priorisiert, mit Schmerz-Gauge)
-  if (s.beschwerden.length) {
-    const grid = el("div");
-    grid.style.display = "grid";
-    grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(240px, 1fr))";
-    grid.style.gap = "12px";
-    grid.style.marginBottom = "14px";
-    s.beschwerden.forEach((b) => {
-      const pc = el("div", "card");
-      pc.style.margin = "0";
-      const prioKurz = b.prioritaet ? b.prioritaet.kurz : null;
-      pc.style.borderTop = "3px solid " + (prioKurz ? PRIO_FARBE[prioKurz] : "var(--color-border)");
-      const top = el("div");
-      top.style.display = "flex";
-      top.style.justifyContent = "space-between";
-      top.style.alignItems = "center";
-      const reg = el("strong", null, b.region);
-      top.appendChild(reg);
-      if (prioKurz) {
-        const badge = chip(prioKurz + (b.prioritaet.label ? " " + b.prioritaet.label : ""), { bg: PRIO_FARBE[prioKurz], fg: "#fff" });
-        badge.style.margin = "0";
-        top.appendChild(badge);
-      }
-      pc.appendChild(top);
-      // Schmerz-Gauge
-      if (b.schmerz_vas != null) {
-        const g = el("div");
-        g.style.margin = "10px 0 6px";
-        const track = el("div");
-        track.style.height = "8px";
-        track.style.borderRadius = "999px";
-        track.style.background = "var(--color-surface-sunken)";
-        track.style.overflow = "hidden";
-        const fill = el("div");
-        fill.style.height = "100%";
-        fill.style.width = b.schmerz_vas * 10 + "%";
-        fill.style.background = schmerzFarbe(b.schmerz_vas);
-        track.appendChild(fill);
-        g.appendChild(track);
-        const lbl = el("div", "field-hint", `Schmerz ${b.schmerz_vas}/10`);
-        lbl.style.fontSize = "0.72rem";
-        lbl.style.marginTop = "3px";
-        g.appendChild(lbl);
-        pc.appendChild(g);
-      }
-      if (b.charakter && b.charakter.length) {
-        const cr = chipRow();
-        b.charakter.slice(0, 4).forEach((ch) => cr.appendChild(chip(ch)));
-        pc.appendChild(cr);
-      }
-      if (therapistMode && b.verdacht.length) {
-        const v = el("p", "field-hint", "→ " + diagnoseLabel(b.verdacht[0].label));
-        v.style.margin = "6px 0 0";
-        v.style.color = "var(--color-secondary)";
-        pc.appendChild(v);
-      }
-      grid.appendChild(pc);
-    });
-    container.appendChild(grid);
-  }
-
-  // Zwei-Spalten: Vitalitätsprofil (Radar) | Ziele + Vorgeschichte
-  const cols = el("div");
-  cols.style.display = "grid";
-  cols.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, 1fr))";
-  cols.style.gap = "12px";
-  cols.style.marginBottom = "14px";
-
-  // Radar
-  const vitCard = dashCard("Vitalitätsprofil (7 Faktoren)");
-  const canvas = document.createElement("canvas");
-  canvas.style.width = "100%";
-  canvas.style.maxWidth = "260px";
-  canvas.style.display = "block";
-  canvas.style.margin = "0 auto";
-  vitCard.appendChild(canvas);
-  const chartProfil = {};
-  FAKTOR_KEYS.forEach((k) => (chartProfil[k] = s.faktoren[k] == null ? null : s.faktoren[k] / 10));
-  requestAnimationFrame(() => renderRadarChart(canvas, chartProfil));
-  cols.appendChild(vitCard);
-
-  // Ziele + Vorgeschichte
-  const infoCard = dashCard("Ziele & Vorgeschichte");
-  if (s.ziele.length) {
-    const zl = el("div");
-    zl.appendChild(el("strong", null, "🎯 Ziele"));
-    const ul = el("ul");
-    ul.style.margin = "4px 0 10px";
-    s.ziele.forEach((z) => z.zielText && ul.appendChild(el("li", null, z.zielText)));
-    zl.appendChild(ul);
-    infoCard.appendChild(zl);
-  }
+  // Vorgeschichte kompakt in einem Absatz
+  const vg = [];
   const dg = s.vorgeschichte.diagnosen.map((d) => DIAGNOSE_LABEL[d] || d);
-  if (dg.length || s.vorgeschichte.blutverduenner || s.vorgeschichte.allergien.length) {
-    const vgRow = chipRow();
-    dg.forEach((d) => vgRow.appendChild(chip(d, { bg: "color-mix(in srgb, var(--color-camel, #a07e57) 14%, transparent)" })));
-    if (s.vorgeschichte.blutverduenner) vgRow.appendChild(chip("⚠ Blutverdünner", { bg: "color-mix(in srgb, var(--color-status-red) 14%, transparent)", fg: "var(--color-status-red)" }));
-    if (s.vorgeschichte.allergien.length) vgRow.appendChild(chip("Allergien"));
-    infoCard.appendChild(vgRow);
-  }
-  const meds = s.vorgeschichte.medikamente.map((m) => m.medikament).filter(Boolean);
-  if (meds.length) infoCard.appendChild(el("p", "field-hint", "💊 " + meds.join(", ")));
+  if (dg.length) vg.push("Diagnosen: " + dg.join(", "));
   const ops = s.vorgeschichte.operationen.map((o) => [o.jahr, o.was].filter(Boolean).join(" ")).filter(Boolean);
-  if (ops.length) infoCard.appendChild(el("p", "field-hint", "🏥 OPs: " + ops.join("; ")));
-  if (s.labor.patientBekannt) infoCard.appendChild(el("p", "field-hint", "🧪 Labor: " + s.labor.patientBekannt));
-  cols.appendChild(infoCard);
-  container.appendChild(cols);
+  if (ops.length) vg.push("OPs: " + ops.join("; "));
+  const unf = (s.vorgeschichte.unfaelle || []).map((o) => [o.jahr, o.was].filter(Boolean).join(" ")).filter(Boolean);
+  if (unf.length) vg.push("Traumen: " + unf.join("; "));
+  const meds = s.vorgeschichte.medikamente.map((m) => m.medikament).filter(Boolean);
+  if (meds.length) vg.push("Medikamente: " + meds.join(", "));
+  if (s.vorgeschichte.blutverduenner) vg.push("⚠ Blutverdünner");
+  if (a["PMH-010"] === true) vg.push("⚠ Kortison");
+  if (s.vorgeschichte.allergien.length) vg.push("Allergien: " + s.vorgeschichte.allergien.join(", "));
+  if (vg.length) absatz("Vorgeschichte", vg.join(". ") + ".");
 
-  // Verlauf als horizontaler Strip
+  // Auffällige Organsysteme (Gates mit Ja/Unsicher) — Details im Reiter Vollständig
+  const sysAuffaellig = [];
+  Object.keys(a).forEach((k) => {
+    if (!k.startsWith("SYSG-")) return;
+    if (a[k] !== "ja" && a[k] !== "unsicher") return;
+    const def = getFrage(k);
+    const label = def && def.group ? def.group.replace("Systemanamnese: ", "") : null;
+    if (label) sysAuffaellig.push(label + (a[k] === "unsicher" ? " (unsicher)" : ""));
+  });
+  if (sysAuffaellig.length) absatz("Systeme auffällig", sysAuffaellig.join(", ") + " — Details siehe Vollständig");
+
+  // Lebensstil in einer Zeile (nur was beantwortet wurde)
+  const leben = [];
+  if (fmt("D1-001")) leben.push(`Schlaf: ${fmt("D1-001")}`);
+  if (fmt("ERN-001")) leben.push(`Ernährung: ${fmt("ERN-001")}`);
+  if (fmt("SD-012")) leben.push(`Sport: ${fmt("SD-012")}`);
+  if (fmt("PMH-015")) leben.push(`Rauchen: ${fmt("PMH-015")}`);
+  if (fmt("PMH-016")) leben.push(`Alkohol: ${fmt("PMH-016")}`);
+  if (leben.length) absatz("Lebensstil", leben.join(" · "));
+
+  // Vitalität, Ziele, Befunde, Verlauf
+  absatz("Vitalität (7 Faktoren)", faktorenZeile(s.faktoren));
+  if (s.ziele.length) absatz("Ziele", s.ziele.map((z) => z.zielText).filter(Boolean).join("; "));
+  if (s.befundErkenntnisse && s.befundErkenntnisse.length)
+    absatz("Befunde", s.befundErkenntnisse.map((b) => `${b.fachbereich}: ${b.notiz}`).join(" · "));
+  else if (s.labor.uploads.length)
+    absatz("Befunde", `${s.labor.uploads.length} Dokument(e) hochgeladen — siehe Reiter Befunde`);
   const tlEvents = s.timeline.filter((e) => e.jahr != null);
-  if (tlEvents.length) {
-    const tc = dashCard("Verlauf");
-    const strip = el("div");
-    strip.style.display = "flex";
-    strip.style.flexWrap = "wrap";
-    strip.style.gap = "6px";
-    tlEvents.forEach((e) => {
-      const item = chip(`${e.jahr} · ${e.icon || ""} ${e.text}`.trim());
-      item.style.fontSize = "0.75rem";
-      strip.appendChild(item);
-    });
-    tc.appendChild(strip);
-    container.appendChild(tc);
-  }
+  if (tlEvents.length) absatz("Verlauf", tlEvents.map((e) => `${e.jahr} ${e.text}`.trim()).join(" · "));
 
-  // Therapeuten-Band: Risikoprofil-Ampel + Psychometrie
+  // Therapeuten-Absatz (nur im Therapeuten-Modus)
   if (therapistMode) {
     const rp = s.therapist.risikoprofil;
-    const tb = dashCard("Therapist only");
-    const row = chipRow();
-    row.appendChild(chip(`PHQ-4 ${s.therapist.phq4.gesamt}/12 · ${s.therapist.phq4.kategorie}`));
-    row.appendChild(chip(`Yellow Flags ${s.therapist.yellowFlags.risiko}`));
-    if (rp) {
-      const ampelFarbe = AMPEL_FARBE[rp.gesamt.ampel];
-      row.appendChild(chip("Risiko: " + AMPEL_TEXT[rp.gesamt.ampel], { bg: "color-mix(in srgb, " + ampelFarbe + " 16%, transparent)", fg: ampelFarbe }));
-    }
-    tb.appendChild(row);
-    if (rp && rp.gesamt.kontraindikationen.length) {
-      const k = el("p", null, "⛔ " + rp.gesamt.kontraindikationen.join(" · "));
-      k.style.color = "var(--color-status-red)";
-      k.style.fontWeight = "var(--weight-medium)";
-      tb.appendChild(k);
-    }
-    if (rp) tb.appendChild(el("p", "field-hint", `Fraktur ${rp.fraktur.stufe} · HWS-Manip. ${rp.hws_manipulation.klasse} · kardiovask. ${rp.kardiovaskulaer.stufe}`));
-    container.appendChild(tb);
+    const t = [];
+    t.push(`PHQ-4 ${s.therapist.phq4.gesamt}/12 (${s.therapist.phq4.kategorie})`);
+    t.push(`Yellow Flags ${s.therapist.yellowFlags.risiko}`);
+    if (rp) t.push(AMPEL_TEXT[rp.gesamt.ampel]);
+    if (rp && rp.gesamt.kontraindikationen.length) t.push("⛔ " + rp.gesamt.kontraindikationen.join(" · "));
+    if (rp) t.push(`Fraktur ${rp.fraktur.stufe} · HWS-Manip. ${rp.hws_manipulation.klasse} · kardiovask. ${rp.kardiovaskulaer.stufe}`);
+    absatz("Therapist only", t.join(" · "));
   }
 }
 
