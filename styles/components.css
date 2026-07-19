@@ -1,0 +1,263 @@
+/**
+ * LINDEBERGS OS — Components
+ * Weiche, organische Formen. Kein hartes Schatten-Design.
+ */
+
+/* ── Gesundheitskonto-Fortschrittsbalken (Rot→Gelb→Grün) ── */
+.progress-track {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-status-red), var(--color-status-yellow) 55%, var(--color-status-green));
+  transition: width 0.4s ease;
+}
+.progress-label {
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── Karten ──────────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-soft);
+}
+.card--sunken {
+  background: var(--color-surface-sunken);
+  border: none;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+  font-family: var(--font-family);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  border-radius: var(--radius-pill);
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn--primary {
+  background: var(--color-forest-800);
+  color: var(--color-text-on-forest);
+}
+.btn--primary:hover:not(:disabled) { background: var(--color-forest-700); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: var(--space-3) var(--space-4);
+}
+.btn--ghost:hover { color: var(--color-forest-800); }
+
+.btn--danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.btn--block { width: 100%; }
+
+/* ── Formfelder ──────────────────────────────────────────── */
+label.field-label {
+  display: block;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+}
+.field-hint {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+.field-required::after {
+  content: " *";
+  color: var(--color-camel);
+}
+
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"],
+input[type="date"], textarea, select {
+  width: 100%;
+  font-family: var(--font-family);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  transition: border-color 0.15s ease;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-sage);
+}
+textarea { resize: vertical; min-height: 90px; }
+
+/* ── Auswahl-Kacheln (single/multi choice) ──────────────── */
+.choice-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.choice-tile {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.choice-tile:focus-visible {
+  outline: 2px solid var(--color-sage);
+  outline-offset: 2px;
+}
+.choice-tile:hover { border-color: var(--color-sage); }
+.choice-tile--selected {
+  border-color: var(--color-forest-500);
+  background: var(--color-sage-tint);
+}
+.choice-tile__mark {
+  width: 20px; height: 20px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.choice-tile--selected .choice-tile__mark {
+  border-color: var(--color-forest-500);
+  background: var(--color-forest-500);
+}
+.choice-tile--selected .choice-tile__mark::after {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+.choice-tile--checkbox .choice-tile__mark { border-radius: 6px; }
+.choice-tile--redflag { border-color: var(--color-danger); }
+
+/* ── VAS-Slider ──────────────────────────────────────────── */
+.vas-wrap { padding: var(--space-2) 0; }
+input[type="range"].vas-slider {
+  width: 100%;
+  accent-color: var(--color-forest-500);
+  height: 6px;
+}
+.vas-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+.vas-value {
+  text-align: center;
+  font-size: var(--text-h2);
+  font-weight: var(--weight-ultralight);
+  color: var(--color-forest-800);
+  margin-bottom: var(--space-2);
+}
+
+/* ── Alerts / Red Flags ─────────────────────────────────── */
+.alert-banner {
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+.alert-banner--danger {
+  background: var(--color-danger-bg);
+  border: 1.5px solid var(--color-danger);
+  color: var(--color-danger);
+}
+.alert-banner--warning {
+  background: var(--color-warning-bg);
+  border: 1.5px solid var(--color-status-yellow);
+  color: #6b5115;
+}
+.alert-banner p { margin: 0; font-size: var(--text-small); line-height: 1.5; }
+
+.emergency-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 8, 6, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  z-index: 100;
+}
+.emergency-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 480px;
+  text-align: center;
+  box-shadow: var(--shadow-lift);
+}
+.emergency-card h2 { color: var(--color-danger); font-weight: var(--weight-semibold); }
+
+/* ── Section-Label (ALL CAPS) ────────────────────────────── */
+.section-label {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-taupe);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-sage-tint);
+  color: var(--color-sage);
+}
+.badge--provisional {
+  background: var(--color-warning-bg);
+  color: #8a6a1f;
+}
+
+.tagline {
+  font-weight: var(--weight-ultralight);
+  font-size: var(--text-h2);
+  color: var(--color-forest-700);
+  line-height: 1.4;
+}

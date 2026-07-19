@@ -1,0 +1,123 @@
+/**
+ * LINDEBERGS OS — Design Tokens
+ * "Nordic Health Luxury" — extrahiert aus Brand Book 3.0
+ *
+ * Prinzip: ruhig, hell, organisch. Nicht dekorieren — einstimmen ("attune").
+ */
+
+:root {
+  /* ── Farben — Primär (Wald-Grün) ────────────────────── */
+  --color-forest-900: #0d3a13;
+  --color-forest-800: #124F1A; /* Logo / Headings */
+  --color-forest-700: #1c5e26;
+  --color-forest-600: #275317;
+  --color-forest-500: #3A7C22; /* Callouts */
+  --color-forest-400: #4EA72E; /* Vital-Akzent, sparsam */
+
+  /* ── Farben — Sekundär (Camel / Taupe, Labels) ──────── */
+  --color-camel: #A07E57;
+  --color-taupe: #8C7F75;
+
+  /* ── Farben — Weicher Akzent (Salbei) ───────────────── */
+  --color-sage: #648B6D;
+  --color-sage-tint: #e7ede8;
+
+  /* ── Farben — Struktur-Akzent (Terracotta, selten!) ── */
+  --color-terracotta: #E97132;
+
+  /* ── Gesundheitskonto: Rot → Gelb → Grün ────────────── */
+  --color-status-red: #C4573F;
+  --color-status-yellow: #D9A63C;
+  --color-status-green: #4EA72E;
+
+  /* ── Hintergrund / Oberflächen (hell, warm) ─────────── */
+  --color-bg: #FBFAF7;
+  --color-surface: #FFFFFF;
+  --color-surface-sunken: #F3F1EB;
+  --color-border: #E4E0D6;
+
+  /* ── Text ────────────────────────────────────────────── */
+  --color-text-primary: #1E241F;
+  --color-text-secondary: #5B5F57;
+  --color-text-muted: #8C8F87;
+  --color-text-on-forest: #F7F9F4;
+
+  /* ── Semantik / Alerts ───────────────────────────────── */
+  --color-danger: #B3261E;
+  --color-danger-bg: #FBECEA;
+  --color-warning-bg: #FCF3E3;
+
+  /* ── Typografie ──────────────────────────────────────── */
+  --font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --weight-hairline: 100;
+  --weight-ultralight: 200;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-semibold: 600;
+
+  --tracking-label: 0.14em;
+  --tracking-tight: -0.01em;
+
+  --text-display: 2.4rem;
+  --text-h1: 1.7rem;
+  --text-h2: 1.3rem;
+  --text-h3: 1.05rem;
+  --text-body: 1rem;
+  --text-small: 0.85rem;
+  --text-label: 0.72rem;
+
+  /* ── Radii / Spacing — organisch, weich ─────────────── */
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --shadow-soft: 0 2px 16px rgba(18, 79, 26, 0.06);
+  --shadow-lift: 0 8px 32px rgba(18, 79, 26, 0.10);
+
+  --max-width: 720px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #12140F;
+    --color-surface: #1A1E17;
+    --color-surface-sunken: #21261D;
+    --color-border: #2E332A;
+    --color-text-primary: #F2F4EE;
+    --color-text-secondary: #C7CBC0;
+    --color-text-muted: #8C9086;
+    --color-sage-tint: #232a25;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #12140F;
+  --color-surface: #1A1E17;
+  --color-surface-sunken: #21261D;
+  --color-border: #2E332A;
+  --color-text-primary: #F2F4EE;
+  --color-text-secondary: #C7CBC0;
+  --color-text-muted: #8C9086;
+  --color-sage-tint: #232a25;
+}
+
+:root[data-theme="light"] {
+  --color-bg: #FBFAF7;
+  --color-surface: #FFFFFF;
+  --color-surface-sunken: #F3F1EB;
+  --color-border: #E4E0D6;
+  --color-text-primary: #1E241F;
+  --color-text-secondary: #5B5F57;
+  --color-text-muted: #8C8F87;
+  --color-sage-tint: #e7ede8;
+}

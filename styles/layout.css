@@ -1,0 +1,202 @@
+/**
+ * LINDEBERGS OS — Layout
+ * Mobile-first, ruhiges Grid, viel Weißraum.
+ */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-weight: var(--weight-light);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell {
+  display: flex;
+  flex: 1;
+  min-height: 100vh;
+}
+
+/* ── Sidebar (Desktop) ───────────────────────────────────── */
+.app-sidebar {
+  display: none;
+  flex-direction: column;
+  width: 280px;
+  flex-shrink: 0;
+  padding: var(--space-6) var(--space-5);
+  border-right: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.app-logo {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-h3);
+  color: var(--color-forest-800);
+  letter-spacing: var(--tracking-tight);
+  margin-bottom: var(--space-6);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.sidebar-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+.sidebar-nav__item--current {
+  color: var(--color-forest-800);
+  font-weight: var(--weight-semibold);
+  background: var(--color-sage-tint);
+}
+.sidebar-nav__item--done {
+  color: var(--color-text-secondary);
+}
+.sidebar-nav__marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+.sidebar-nav__item--current .sidebar-nav__marker {
+  border-color: var(--color-forest-500);
+  background: var(--color-forest-500);
+  color: white;
+}
+.sidebar-nav__item--done .sidebar-nav__marker {
+  border-color: var(--color-sage);
+  background: var(--color-sage);
+  color: white;
+}
+
+.sidebar-footer {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── Mobile top bar (fallback below sidebar breakpoint) ──── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-5);
+}
+
+.app-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.app-content-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-8);
+}
+
+.app-footer-nav {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-5);
+}
+
+.app-footer-nav__row {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+@media (min-width: 900px) {
+  .app-sidebar { display: flex; }
+  .app-header { display: none; }
+}
+
+.step-header {
+  margin-bottom: var(--space-6);
+}
+
+.step-eyebrow {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-camel);
+  margin-bottom: var(--space-2);
+}
+
+.step-title {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-ultralight);
+  color: var(--color-forest-800);
+  margin: 0 0 var(--space-2);
+  line-height: 1.25;
+}
+
+.step-subtitle {
+  font-size: var(--text-body);
+  font-weight: var(--weight-light);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (min-width: 640px) {
+  .app-main { padding-top: var(--space-7); }
+  .step-title { font-size: var(--text-display); }
+}

@@ -1,0 +1,50 @@
+/**
+ * LINDEBERGS OS — Druckansicht (window.print → PDF)
+ * Blendet Navigation/Steuerung aus, zeigt nur die Zusammenfassung.
+ */
+@media print {
+  .app-sidebar,
+  .app-header,
+  .app-footer-nav,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+
+  .app-shell,
+  .app-content-col {
+    display: block;
+  }
+
+  .app-main {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .card,
+  .card--sunken {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+
+  .step-title {
+    color: #124f1a;
+  }
+
+  /* Druck-Kopfzeile mit Marke */
+  .app-main::before {
+    content: "LINDEBERGS — Anamnese-Zusammenfassung";
+    display: block;
+    font-weight: 600;
+    color: #124f1a;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #124f1a;
+  }
+}
