@@ -24,6 +24,7 @@ import { registerSportStep } from "./step-sport.js";
 import { registerPsychosozialStep } from "./step-psychosozial.js";
 import { registerSiebenFaktorenStep } from "./step-sieben-faktoren.js";
 import { registerAbschlussStep } from "./step-abschluss.js";
+import { registerKontoStep } from "./step-konto.js";
 
 registerWelcomeStep();
 registerStammdatenStep();
@@ -43,3 +44,5 @@ registerPsychosozialStep();
 // Vitalitätsprofil — leitet sich aus allen vorherigen Antworten ab.
 registerSiebenFaktorenStep();
 registerAbschlussStep();
+// Konto & Cloud-Speicherung — bewusst ganz am Ende der Sidebar.
+registerKontoStep();
