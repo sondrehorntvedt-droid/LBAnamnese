@@ -161,4 +161,25 @@ export const GOLDEN_CASES = [
     regionen: [],
     answers: { "D4-003": ["besser_nach_stuhl", "blähungen"], "D4-011": true, "D4-009": "unter10", "D4-010": "nie" },
   },
+  {
+    id: "GC-21",
+    name: "Immun: geschwollene Gelenke + Sicca (Autoimmun-Panel)",
+    erwartung: "IMM-002 geschwollene_gelenke → hsCRP/BSG/RF/anti-CCP/ANA; +trockene_augen_mund → Sjögren (SS-A/SS-B).",
+    regionen: [],
+    answers: { "IMM-002": ["geschwollene_gelenke", "trockene_augen_mund"] },
+  },
+  {
+    id: "GC-22",
+    name: "WHO-5: sehr niedriges Wohlbefinden (Screening-Schwelle)",
+    erwartung: "Alle 5 Items niedrig → Prozent < 28 (Depressions-Screening empfohlen); speist Rise.",
+    regionen: [],
+    answers: { "WHO5-1": "1", "WHO5-2": "1", "WHO5-3": "0", "WHO5-4": "1", "WHO5-5": "1" },
+  },
+  {
+    id: "GC-23",
+    name: "Fuß: Charcot-Verdacht (warm/geschwollen + Diabetes)",
+    erwartung: "MF-005=ja + PMH-001 enthält diabetes muss den Charcot-Red-Flag auslösen.",
+    regionen: ["MITTELFUSS"],
+    answers: { "MF-005": true, "PMH-001": ["diabetes"] },
+  },
 ];

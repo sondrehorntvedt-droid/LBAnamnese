@@ -174,6 +174,53 @@ export const PSYCHOSOZIAL_FRAGEN = [
       { value: "kaum", label: "Kaum — ich sehe keinen Ausweg" }
     ]
   },
+  // ── WHO-5 Wohlbefinden-Index (validiert, 5 Items; misst subjektives
+  //    Wohlbefinden/„Glück". Rohwert 0–25 ×4 = 0–100 %. <50 % = reduziert,
+  //    <28 % = Depressions-Screening empfohlen). Bewusst kurz. ───────────
+  ...["WHO5-1", "WHO5-2", "WHO5-3", "WHO5-4", "WHO5-5"].map((id, i) => ({
+    id,
+    frage: [
+      "In den letzten 2 Wochen war ich froh und guter Laune.",
+      "In den letzten 2 Wochen habe ich mich ruhig und entspannt gefühlt.",
+      "In den letzten 2 Wochen habe ich mich energisch und aktiv gefühlt.",
+      "In den letzten 2 Wochen habe ich mich beim Aufwachen frisch und ausgeruht gefühlt.",
+      "In den letzten 2 Wochen war mein Alltag voller Dinge, die mich interessieren.",
+    ][i],
+    type: "single_choice",
+    required: false,
+    section: "Wohlbefinden (WHO-5)",
+    who5_item: true,
+    options: [
+      { value: "5", label: "Die ganze Zeit" },
+      { value: "4", label: "Meistens" },
+      { value: "3", label: "Etwas mehr als die Hälfte der Zeit" },
+      { value: "2", label: "Etwas weniger als die Hälfte der Zeit" },
+      { value: "1", label: "Ab und zu" },
+      { value: "0", label: "Zu keinem Zeitpunkt" },
+    ],
+  })),
+  {
+    id: "PSY-011",
+    frage: "Wie zufrieden sind Sie insgesamt mit Ihrem Leben zurzeit?",
+    type: "vas_scale",
+    min: 0,
+    max: 10,
+    required: false,
+    section: "Lebenszufriedenheit",
+    labels: { 0: "Gar nicht zufrieden", 5: "Teils-teils", 10: "Sehr zufrieden" }
+  },
+  {
+    id: "PSY-012",
+    frage: "Haben Sie den Eindruck, dass Gedächtnis oder Konzentration in letzter Zeit nachgelassen haben?",
+    type: "single_choice",
+    required: false,
+    section: "Kognition",
+    options: [
+      { value: "nein", label: "Nein" },
+      { value: "leicht", label: "Etwas — fällt mir manchmal auf" },
+      { value: "deutlich", label: "Deutlich — belastet mich im Alltag" }
+    ]
+  },
   {
     id: "PSY-010",
     frage: "Waren Sie jemals in psychologischer oder psychiatrischer Behandlung?",

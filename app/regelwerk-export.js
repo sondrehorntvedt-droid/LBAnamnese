@@ -18,6 +18,7 @@ import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE, SAEUGLING_RED_FLAGS } from ".
 import { VITALSTOFF_REGELN } from "../data/A17_vitalstoff_regeln.js";
 import { HORMON_REGELN, HORMON_RED_FLAGS } from "../data/A19_hormon_regeln.js";
 import { DARM_REGELN, DARM_RED_FLAGS } from "../data/A20_darm_regeln.js";
+import { IMMUN_REGELN } from "../data/A21_immun_regeln.js";
 import { INDEX } from "./anamnese-index.js";
 import { buildManifest } from "./manifest.js";
 
@@ -51,6 +52,7 @@ export function baueRegelwerk(version) {
     hormon_red_flags: HORMON_RED_FLAGS,
     darm_regeln: DARM_REGELN,
     darm_red_flags: DARM_RED_FLAGS,
+    immun_regeln: IMMUN_REGELN,
     umfang: buildManifest(),
   };
 }

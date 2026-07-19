@@ -153,6 +153,8 @@ const REGION_CONTEXT_BUILDERS = {
   MITTELFUSS: (a) => ({
     fersenschmerz_morgens: a["MF-003"] === true,
     stressreaktion_laeufer: a["MF-004"] === true,
+    // Charcot-Fuß: warmer/geschwollener Fuß bei bekanntem Diabetes.
+    charcot_verdacht: a["MF-005"] === true && includesVal(a["PMH-001"], "diabetes"),
   }),
   FUSS_ZEHEN: (a) => ({
     akute_arthritis_grosszehe: a["FZ-003"] === true,
@@ -163,6 +165,7 @@ const REGION_CONTEXT_BUILDERS = {
     schwellung_sternum: a["RIP-004"] === true && a["RIP-002"] === "Brustbein vorne",
     atemnot_nach_trauma: a["RIP-B-001"] === true,
     gurtelschmerz_thorax: a["RIP-005"] === true,
+    husten_rippenschmerz: a["RIP-006"] === true,
   }),
 
   // ── Systemische Module (A07) ──────────────────────────────

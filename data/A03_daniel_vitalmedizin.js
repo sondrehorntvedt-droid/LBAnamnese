@@ -712,3 +712,50 @@ export const DARMGESUNDHEIT_FRAGEN = [
     hint: "Mögliche Hinweise auf eine entzündliche/organische Darmerkrankung — werden als dringender Abklärungshinweis erfasst (siehe app/darm.js)."
   }
 ];
+
+// ── IMMUNSYSTEM & ENTZÜNDUNG (Tiefenanalyse) ─────────────────────────────
+// Orientierung: „stille Entzündung"/Inflammaging (P. Attia; funktionelle
+// Medizin M. Hyman); Atopie & Autoimmunität. Speist app/immun.js.
+export const IMMUN_FRAGEN = [
+  {
+    id: "IMM-001",
+    frage: "Haben Sie Allergien? (Mehrfachauswahl)",
+    type: "multiple_choice",
+    required: false,
+    section: "Allergie / Atopie",
+    options: [
+      { value: "heuschnupfen", label: "Heuschnupfen / allergischer Schnupfen" },
+      { value: "asthma", label: "Allergisches Asthma" },
+      { value: "neurodermitis", label: "Neurodermitis / atopisches Ekzem" },
+      { value: "nahrungsmittel", label: "Nahrungsmittelallergie" },
+      { value: "keine", label: "Keine bekannten Allergien" }
+    ]
+  },
+  {
+    id: "IMM-002",
+    frage: "Haben Sie eines dieser anhaltenden oder wiederkehrenden Zeichen? (Mehrfachauswahl)",
+    type: "multiple_choice",
+    required: false,
+    section: "Entzündung / Autoimmunität",
+    options: [
+      { value: "geschwollene_gelenke", label: "Geschwollene / entzündete Gelenke" },
+      { value: "hautausschlaege", label: "Wiederkehrende Hautausschläge" },
+      { value: "wiederkehrendes_fieber", label: "Wiederkehrendes Fieber ohne klaren Infekt" },
+      { value: "chronische_muedigkeit", label: "Anhaltende, unerklärliche Erschöpfung" },
+      { value: "trockene_augen_mund", label: "Anhaltend trockene Augen und trockener Mund" },
+      { value: "keine", label: "Keines davon" }
+    ]
+  },
+  {
+    id: "IMM-003",
+    frage: "Wie oft haben Sie erkältungsartige Infekte pro Jahr?",
+    type: "single_choice",
+    required: false,
+    section: "Infektabwehr",
+    options: [
+      { value: "0_2", label: "Selten (0–2 pro Jahr)" },
+      { value: "3_4", label: "Gelegentlich (3–4)" },
+      { value: "5plus", label: "Häufig (5 oder mehr)" }
+    ]
+  }
+];

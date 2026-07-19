@@ -750,7 +750,8 @@ export const GELENKE_BAUM = {
       { id: "MF-001", frage: "Schmerz im Mittelfuß (zwischen Knöchel und Zehen)?", type: "yes_no" },
       { id: "MF-002", frage: "Trauma (Verdrehung, Sturz auf Fuß)?", type: "yes_no" },
       { id: "MF-003", frage: "Schmerzt die Ferse beim ersten Auftreten morgens?", type: "yes_no" },
-      { id: "MF-004", frage: "Laufen/joggen Sie viel und der Schmerz kam schleichend unter Belastung (ohne einzelnes Trauma)?", type: "yes_no" }
+      { id: "MF-004", frage: "Laufen/joggen Sie viel und der Schmerz kam schleichend unter Belastung (ohne einzelnes Trauma)?", type: "yes_no" },
+      { id: "MF-005", frage: "Ist der Fuß auffällig warm, geschwollen und gerötet — evtl. OHNE starke Schmerzen?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "fersenschmerz_morgens", op: "==", wert: true }, cdss_gewicht: { plantarfasziitis: +5 },
@@ -760,6 +761,10 @@ export const GELENKE_BAUM = {
         ]
       },
       { bedingung: { feld: "stressreaktion_laeufer", op: "==", wert: true }, cdss_gewicht: { metatarsale_stressfraktur: +4 } }
+    ],
+    red_flags: [
+      { bedingung: { feld: "charcot_verdacht", op: "==", wert: true }, cdss_gewicht: { charcot_fuss: +5 },
+        hinweis: "Warmer, geschwollener Fuß bei Diabetes (oft schmerzarm) → Verdacht Charcot-Fuß: umgehend ärztliche/diabetologische Abklärung, Entlastung, KEINE Manipulation/Mobilisation vorher" }
     ]
   },
 
@@ -794,12 +799,18 @@ export const GELENKE_BAUM = {
       { id: "RIP-002", frage: "Wo ist der Schmerz?", type: "single_choice", options: ["Rippen seitlich", "Brustbein vorne", "Rippenbogen unten", "Rippen-Wirbel Übergang hinten"] },
       { id: "RIP-003", frage: "Trauma (Sturz, Schlag, starkes Husten)?", type: "yes_no" },
       { id: "RIP-004", frage: "Schwellung oder Verdickung über dem Rippenknochen?", type: "yes_no" },
-      { id: "RIP-005", frage: "Brennender, gürtelförmiger Schmerz entlang einer Rippe auf einer Seite?", type: "yes_no" }
+      { id: "RIP-005", frage: "Brennender, gürtelförmiger Schmerz entlang einer Rippe auf einer Seite?", type: "yes_no" },
+      { id: "RIP-006", frage: "Kam der Schmerz durch heftiges oder langes Husten (ohne Sturz/Schlag)?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "trauma_rippen", op: "==", wert: true }, cdss_gewicht: { rippenfraktur: +4, pneumothorax: +2 },
         fragen: [
           { id: "RIP-B-001", frage: "Atemnot oder Lufthunger nach dem Trauma?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "husten_rippenschmerz", op: "==", wert: true }, cdss_gewicht: { rippen_husten_fraktur: +3 },
+        fragen: [
+          { id: "RIP-C-001", frage: "Ist eine Osteoporose bekannt oder sind Sie über 65?", type: "yes_no" }
         ]
       },
       { bedingung: { feld: "schwellung_sternum", op: "==", wert: true }, cdss_gewicht: { tietze_syndrom: +4 } },

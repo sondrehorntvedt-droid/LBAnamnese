@@ -22,6 +22,7 @@ import { diagnoseLabel, diagnoseICD10, getBasistestsFuerRegion, computeSafetyInd
 import { computeVitalstoffProfil } from "../vitalstoff.js";
 import { computeHormonProfil } from "../hormon.js";
 import { computeDarmProfil } from "../darm.js";
+import { computeImmunProfil } from "../immun.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
 import { state } from "../state.js";
 
@@ -801,6 +802,32 @@ function renderKlinik(container, s, therapistMode) {
       ul.style.margin = "4px 0 0";
       dm.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
       dmCard.appendChild(ul);
+    }
+  }
+
+  // 3e) Vitalmedizin: Immun-/Entzündungs-Prüfliste (deterministisch).
+  const im = computeImmunProfil(state.answers);
+  if (im.pruefen.length || im.beratung.length) {
+    const imCard = sektion(container, "Vitalmedizin — Immun- & Entzündungs-Prüfliste");
+    imCard.appendChild(
+      el("p", "field-hint", "Aus Immun-/Entzündungs-/Allergie-Angaben abgeleitete Diagnostik-Vorschläge — keine Diagnose.")
+    );
+    if (im.pruefen.length) {
+      const l = el("div", "section-label", "Diagnostik erwägen");
+      l.style.marginTop = "12px";
+      imCard.appendChild(l);
+      imCard.appendChild(
+        tabelle(["Untersuchung", "Anlass (aus Anamnese)"], im.pruefen.map((p) => [p.marker, p.gruende.join("; ")]))
+      );
+    }
+    if (im.beratung.length) {
+      const l = el("div", "section-label", "Maßnahmen");
+      l.style.marginTop = "12px";
+      imCard.appendChild(l);
+      const ul = el("ul");
+      ul.style.margin = "4px 0 0";
+      im.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
+      imCard.appendChild(ul);
     }
   }
 

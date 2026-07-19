@@ -142,9 +142,36 @@ function relationsScore(answers) {
   return clamp(teile.reduce((a, b) => a + b, 0) / teile.length);
 }
 
+/**
+ * WHO-5 Wohlbefinden-Index (deterministisch). Rohwert 0–25 (5 Items × 0–5),
+ * Prozent = Rohwert × 4. Liefert null, wenn kein Item beantwortet.
+ * <50 % = reduziertes Wohlbefinden; <28 % = Depressions-Screening empfohlen.
+ */
+export function computeWHO5(answers) {
+  const items = ["WHO5-1", "WHO5-2", "WHO5-3", "WHO5-4", "WHO5-5"]
+    .map((id) => Number(answers[id]))
+    .filter((v) => Number.isFinite(v));
+  if (!items.length) return null;
+  // Nur werten, wenn vollständig (validierte Auswertung braucht alle 5 Items).
+  if (items.length < 5) return { prozent: null, unvollstaendig: true };
+  const roh = items.reduce((a, b) => a + b, 0);
+  const prozent = roh * 4;
+  const kategorie =
+    prozent < 28 ? "sehr niedrig (Depressions-Screening empfohlen)" :
+    prozent < 50 ? "reduziert" : "gut";
+  return { roh, prozent, kategorie, unvollstaendig: false };
+}
+
 function riseScore(answers) {
-  if (typeof answers["FAK-RISE"] === "number") return clamp(answers["FAK-RISE"] * 10);
-  return null;
+  // Rise = Sinn/Zuversicht/Zufriedenheit. Speist sich aus der eingewobenen
+  // FAK-RISE-Frage, dem WHO-5-Wohlbefinden und der Lebenszufriedenheit (PSY-011).
+  const teile = [];
+  if (typeof answers["FAK-RISE"] === "number") teile.push(clamp(answers["FAK-RISE"] * 10));
+  const who5 = computeWHO5(answers);
+  if (who5 && typeof who5.prozent === "number") teile.push(clamp(who5.prozent));
+  if (typeof answers["PSY-011"] === "number") teile.push(clamp(answers["PSY-011"] * 10));
+  if (!teile.length) return null;
+  return clamp(teile.reduce((a, b) => a + b, 0) / teile.length);
 }
 
 /**
