@@ -15,6 +15,7 @@ import { computeRisikoprofil } from "./risikoprofil.js";
 import { computeVitalstoffProfil } from "./vitalstoff.js";
 import { compute7FaktorenAbgeleitet } from "./faktoren-mapping.js";
 import { computeHormonProfil } from "./hormon.js";
+import { computeDarmProfil } from "./darm.js";
 import { GOLDEN_CASES } from "../tests/golden/cases.js";
 
 /** Deterministische Normalform eines Fall-Ergebnisses (stabil sortiert). */
@@ -35,12 +36,14 @@ function bewerteFall(fall) {
   const vitalstoff = computeVitalstoffProfil(fall.answers);
   const faktoren = compute7FaktorenAbgeleitet(fall.answers);
   const hormon = computeHormonProfil(fall.answers);
+  const darm = computeDarmProfil(fall.answers);
   return {
     regionen,
     risikoprofil: JSON.parse(JSON.stringify(risiko)),
     vitalstoff: JSON.parse(JSON.stringify(vitalstoff)),
     faktoren: JSON.parse(JSON.stringify(faktoren)),
     hormon: JSON.parse(JSON.stringify(hormon)),
+    darm: JSON.parse(JSON.stringify(darm)),
   };
 }
 

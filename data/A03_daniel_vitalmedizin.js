@@ -646,5 +646,69 @@ export const DARMGESUNDHEIT_FRAGEN = [
     type: "yes_no",
     required: false,
     section: "Mikrobiom"
+  },
+  // ── Mikrobiom-Diversität (Grundlage: T. Spector / ZOE — „30 Pflanzen pro
+  //    Woche"; fermentierte Lebensmittel für Diversität) ───────────────
+  {
+    id: "D4-009",
+    frage: "Wie viele VERSCHIEDENE pflanzliche Lebensmittel (Gemüse, Obst, Hülsenfrüchte, Nüsse, Samen, Vollkorn, Kräuter) essen Sie ungefähr pro Woche?",
+    type: "single_choice",
+    required: false,
+    section: "Mikrobiom",
+    hint: "Vielfalt (Ziel ~30/Woche) ist ein starker Marker für Mikrobiom-Diversität.",
+    options: [
+      { value: "unter10", label: "Weniger als 10 verschiedene" },
+      { value: "10_20", label: "10–20 verschiedene" },
+      { value: "20_30", label: "20–30 verschiedene" },
+      { value: "30plus", label: "30 oder mehr" }
+    ]
+  },
+  {
+    id: "D4-010",
+    frage: "Wie oft essen Sie fermentierte Lebensmittel (Joghurt, Kefir, Sauerkraut, Kimchi, Miso, Kombucha)?",
+    type: "single_choice",
+    required: false,
+    section: "Mikrobiom",
+    options: [
+      { value: "regelmaessig", label: "Regelmäßig (fast täglich)" },
+      { value: "gelegentlich", label: "Gelegentlich" },
+      { value: "nie", label: "Nie / sehr selten" }
+    ]
+  },
+  {
+    id: "D4-011",
+    frage: "Treten Blähungen v.a. kurz nach dem Essen auf und verstärken sich durch ballaststoffreiche Kost oder Probiotika?",
+    type: "yes_no",
+    required: false,
+    section: "Mikrobiom",
+    hint: "Screening-Hinweis auf eine Dünndarm-Fehlbesiedlung (SIBO)."
+  },
+  {
+    id: "D4-013",
+    frage: "Verschlechtern sich Ihre Darmbeschwerden deutlich in Stressphasen?",
+    type: "single_choice",
+    required: false,
+    section: "Mikrobiom",
+    hint: "Darm-Hirn-Achse (Orientierung: E. Mayer).",
+    options: [
+      { value: "stark", label: "Ja, deutlich" },
+      { value: "etwas", label: "Etwas" },
+      { value: "nein", label: "Nein / kaum" }
+    ]
+  },
+  // ── IBD-/organische Alarmzeichen (über den globalen Wächter, alert_on) ─
+  {
+    id: "D4-012",
+    frage: "Haben Sie eines dieser Warnzeichen? (Mehrfachauswahl)",
+    type: "multiple_choice",
+    required: false,
+    section: "Darmgesundheit — Red Flags",
+    options: [
+      { value: "naechtlicher_durchfall", label: "Durchfall, der Sie nachts aufweckt" },
+      { value: "gewichtsverlust", label: "Ungewollter Gewichtsverlust" },
+      { value: "fieber_durchfall", label: "Wiederkehrendes Fieber mit Durchfall" },
+      { value: "keine", label: "Keines davon" }
+    ],
+    hint: "Mögliche Hinweise auf eine entzündliche/organische Darmerkrankung — werden als dringender Abklärungshinweis erfasst (siehe app/darm.js)."
   }
 ];

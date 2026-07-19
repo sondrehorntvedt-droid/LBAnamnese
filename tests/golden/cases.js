@@ -154,4 +154,11 @@ export const GOLDEN_CASES = [
     regionen: [],
     answers: { "SD-004": "f", "D3-005": "unregelmaessig", "D3-010": ["hirsutismus", "akne"] },
   },
+  {
+    id: "GC-20",
+    name: "Darm: IBS-Muster + SIBO-Hinweis + geringe Vielfalt",
+    erwartung: "Rome-IV (D4-003 besser_nach_stuhl) → Low-FODMAP+Calprotectin; SIBO (D4-011) → Atemtest; geringe Pflanzenvielfalt → Diversität.",
+    regionen: [],
+    answers: { "D4-003": ["besser_nach_stuhl", "blähungen"], "D4-011": true, "D4-009": "unter10", "D4-010": "nie" },
+  },
 ];

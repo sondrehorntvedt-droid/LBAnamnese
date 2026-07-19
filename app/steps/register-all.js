@@ -28,6 +28,7 @@ import { registerSiebenFaktorenStep } from "./step-sieben-faktoren.js";
 import { registerAbschlussStep } from "./step-abschluss.js";
 import { registerKontoStep } from "./step-konto.js";
 import { registerHormonRedFlags } from "../hormon.js";
+import { registerDarmRedFlags } from "../darm.js";
 
 registerWelcomeStep();
 registerStammdatenStep();
@@ -54,3 +55,5 @@ registerAbschlussStep();
 registerKontoStep();
 // Endokrine Red-Flag-Quelle am globalen Wächter anmelden (kein eigener Schritt).
 registerHormonRedFlags();
+// Darm-Red-Flags (IBD-/organische Alarmzeichen) am globalen Wächter anmelden.
+registerDarmRedFlags();

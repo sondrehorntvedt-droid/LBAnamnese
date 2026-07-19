@@ -21,6 +21,7 @@ import { INDEX, formatAntwort, getFrage } from "../anamnese-index.js";
 import { diagnoseLabel, diagnoseICD10, getBasistestsFuerRegion, computeSafetyIndikationen, getGesicherteDiagnosen } from "../klinik.js";
 import { computeVitalstoffProfil } from "../vitalstoff.js";
 import { computeHormonProfil } from "../hormon.js";
+import { computeDarmProfil } from "../darm.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
 import { state } from "../state.js";
 
@@ -774,6 +775,32 @@ function renderKlinik(container, s, therapistMode) {
       ul.style.margin = "4px 0 0";
       hz.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
       hzCard.appendChild(ul);
+    }
+  }
+
+  // 3d) Vitalmedizin: Darm-/Mikrobiom-Prüfliste (deterministisch).
+  const dm = computeDarmProfil(state.answers);
+  if (dm.pruefen.length || dm.beratung.length) {
+    const dmCard = sektion(container, "Vitalmedizin — Darm- & Mikrobiom-Prüfliste");
+    dmCard.appendChild(
+      el("p", "field-hint", "Aus den Darm-/Mikrobiom-Antworten abgeleitete Diagnostik- und Maßnahmenvorschläge — keine Diagnose.")
+    );
+    if (dm.pruefen.length) {
+      const l = el("div", "section-label", "Diagnostik erwägen");
+      l.style.marginTop = "12px";
+      dmCard.appendChild(l);
+      dmCard.appendChild(
+        tabelle(["Untersuchung", "Anlass (aus Anamnese)"], dm.pruefen.map((p) => [p.marker, p.gruende.join("; ")]))
+      );
+    }
+    if (dm.beratung.length) {
+      const l = el("div", "section-label", "Ernährungs-/Mikrobiom-Maßnahmen");
+      l.style.marginTop = "12px";
+      dmCard.appendChild(l);
+      const ul = el("ul");
+      ul.style.margin = "4px 0 0";
+      dm.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
+      dmCard.appendChild(ul);
     }
   }
 
