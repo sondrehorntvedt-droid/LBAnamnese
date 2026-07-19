@@ -16,10 +16,10 @@ import { HAUPTBESCHWERDE_FRAGEN, ALLE_W_OPTIONEN } from "../data/A01_hauptbeschw
 import { BEGLEITSYMPTOME_FRAGEN } from "../data/A01c_begleitsymptome.js";
 import { VORGESCHICHTE_FRAGEN } from "../data/A02_vorgeschichte_pmh.js";
 import { GATE_OPTIONEN, ENDOKRIN_DEEP_FRAGEN } from "../data/A02b_systemanamnese.js";
-import { SCHLAF_ENERGIE_FRAGEN, STOFFWECHSEL_FRAGEN, HORMONSTATUS_FRAGEN, DARMGESUNDHEIT_FRAGEN, IMMUN_FRAGEN, HORMON_GATE, IMMUN_GATE } from "../data/A03_daniel_vitalmedizin.js";
+import { SCHLAF_ENERGIE_FRAGEN, STOFFWECHSEL_FRAGEN, HORMONSTATUS_FRAGEN, DARMGESUNDHEIT_FRAGEN, IMMUN_FRAGEN, HORMON_GATE, IMMUN_GATE, DARM_GATE } from "../data/A03_daniel_vitalmedizin.js";
 import { PSYCHOSOZIAL_FRAGEN } from "../data/A05_psychosozial_mental.js";
-import { SPORT_KERN_FRAGEN, SPORT_PERFORMANCE_FRAGEN } from "../data/A10_sport_bewegung.js";
-import { ERNAEHRUNG_KERN_FRAGEN, ERNAEHRUNG_TIEFE_FRAGEN } from "../data/A11_ernaehrung.js";
+import { SPORT_KERN_FRAGEN, SPORT_PERFORMANCE_FRAGEN, SPORT_GATE } from "../data/A10_sport_bewegung.js";
+import { ERNAEHRUNG_KERN_FRAGEN, ERNAEHRUNG_TIEFE_FRAGEN, ERN_GATE } from "../data/A11_ernaehrung.js";
 import { VITALPARAMETER_FRAGEN } from "../data/A15_vitalparameter.js";
 import { UPLOAD_KATEGORIEN } from "../data/A00c_uploads.js";
 import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEUFIGKEIT_OPTIONEN, THERAPIE_FREITEXT, INTERVENTION_FRAGEN } from "../data/A01b_therapie_historie.js";
@@ -70,10 +70,10 @@ function addList(list, group) {
 addList(STAMMDATEN_FELDER, "Stammdaten");
 addList(BEGLEITSYMPTOME_FRAGEN, "Begleitsymptome");
 addList(VORGESCHICHTE_FRAGEN, "Vorgeschichte");
-addList([...SCHLAF_ENERGIE_FRAGEN, ...STOFFWECHSEL_FRAGEN, ...HORMONSTATUS_FRAGEN, ...DARMGESUNDHEIT_FRAGEN, ...IMMUN_FRAGEN, HORMON_GATE, IMMUN_GATE], "Vitalmedizin");
+addList([...SCHLAF_ENERGIE_FRAGEN, ...STOFFWECHSEL_FRAGEN, ...HORMONSTATUS_FRAGEN, ...DARMGESUNDHEIT_FRAGEN, ...IMMUN_FRAGEN, HORMON_GATE, IMMUN_GATE, DARM_GATE], "Vitalmedizin");
 addList(PSYCHOSOZIAL_FRAGEN, "Psychosozial");
-addList([...SPORT_KERN_FRAGEN, ...SPORT_PERFORMANCE_FRAGEN], "Sport & Bewegung");
-addList([...ERNAEHRUNG_KERN_FRAGEN, ...ERNAEHRUNG_TIEFE_FRAGEN], "Ernährung & Trinken");
+addList([...SPORT_KERN_FRAGEN, ...SPORT_PERFORMANCE_FRAGEN, SPORT_GATE], "Sport & Bewegung");
+addList([...ERNAEHRUNG_KERN_FRAGEN, ...ERNAEHRUNG_TIEFE_FRAGEN, ERN_GATE], "Ernährung & Trinken");
 addList(VITALPARAMETER_FRAGEN, "Vitalparameter");
 // Befunde: Upload-Kategorie + erfasste Kernbefund-Notiz je Fachbereich.
 UPLOAD_KATEGORIEN.forEach((k) => {

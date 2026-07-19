@@ -112,6 +112,14 @@ export const SPORT_KERN_FRAGEN = [
   },
 ];
 
+// Bereichs-Gate (Baum-Logik): erst „Ja" öffnet den Performance-Block.
+export const SPORT_GATE = {
+  id: "SPT-GATE",
+  frage: "Möchten Sie Fragen zu Training & Leistung beantworten (Ausdauer, Kraft, Regeneration, Sportverletzungen)? — bei „Nein“ überspringen wir diesen Teil.",
+  type: "yes_no",
+  required: false,
+};
+
 // ── PERFORMANCE (nur Tiefenanalyse): Trainingssteuerung, Longevity-Marker ──
 export const SPORT_PERFORMANCE_FRAGEN = [
   {

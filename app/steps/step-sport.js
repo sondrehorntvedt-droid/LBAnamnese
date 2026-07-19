@@ -6,7 +6,8 @@
  */
 import { registerStep } from "../router.js";
 import { renderFragenListe } from "../render/renderFragenListe.js";
-import { SPORT_KERN_FRAGEN, SPORT_PERFORMANCE_FRAGEN } from "../../data/A10_sport_bewegung.js";
+import { renderGatedBlock } from "../render/renderGate.js";
+import { SPORT_KERN_FRAGEN, SPORT_PERFORMANCE_FRAGEN, SPORT_GATE } from "../../data/A10_sport_bewegung.js";
 import { state } from "../state.js";
 
 function el(tag, className, text) {
@@ -52,11 +53,17 @@ export function registerSportStep() {
     estMinutes: 4,
     tiers: ["ganzheitlich", "tiefenanalyse"],
     render(container) {
-      const sections =
-        state.meta.anamneseTiefe === "tiefenanalyse"
-          ? [...SPORT_KERN_FRAGEN, ...SPORT_PERFORMANCE_FRAGEN]
-          : SPORT_KERN_FRAGEN;
-      return renderSectioned(container, sections);
+      // Kern immer; der Performance-Block (Tiefenanalyse) hängt hinter einem
+      // Bereichs-Gate und klappt bei „Nein" komplett zu (samt Unterüberschriften).
+      const cleanups = [renderSectioned(container, SPORT_KERN_FRAGEN)];
+      if (state.meta.anamneseTiefe === "tiefenanalyse") {
+        cleanups.push(
+          renderGatedBlock(container, SPORT_GATE, (wrap) =>
+            renderSectioned(wrap, SPORT_PERFORMANCE_FRAGEN)
+          )
+        );
+      }
+      return () => cleanups.forEach((fn) => fn && fn());
     },
   });
 }

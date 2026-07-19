@@ -728,6 +728,13 @@ export const IMMUN_GATE = {
   required: false,
   section: "Immunsystem & Entzündung",
 };
+export const DARM_GATE = {
+  id: "DARM-GATE",
+  frage: "Möchten Sie Angaben zu Verdauung & Darm machen (Beschwerden, Stuhlgang, Unverträglichkeiten, Mikrobiom)? — bei „Nein“ überspringen wir diesen Teil.",
+  type: "yes_no",
+  required: false,
+  section: "Darmgesundheit & Mikrobiom",
+};
 
 // ── IMMUNSYSTEM & ENTZÜNDUNG (Tiefenanalyse) ─────────────────────────────
 // Orientierung: „stille Entzündung"/Inflammaging (P. Attia; funktionelle

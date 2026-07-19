@@ -23,7 +23,7 @@ const SYNC_KEYS = ["lindebergs_anamnese_v1", "lindebergs_patientenakte"];
 const APP_VERSION = "2026.07-supabase-1";
 // Aktive Regelwerk-Version: wird in jeden gespeicherten Stand gestempelt,
 // damit jede Auswertung später exakt reproduzierbar ist (siehe regelwerk/).
-const REGELWERK_VERSION = "2026.07.19-10";
+const REGELWERK_VERSION = "2026.07.19-11";
 
 let aktuellerUserId = null;
 let debounceTimer = null;

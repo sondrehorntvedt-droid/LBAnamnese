@@ -5,7 +5,8 @@
  */
 import { registerStep } from "../router.js";
 import { renderFragenListe } from "../render/renderFragenListe.js";
-import { ERNAEHRUNG_KERN_FRAGEN, ERNAEHRUNG_TIEFE_FRAGEN } from "../../data/A11_ernaehrung.js";
+import { renderGatedBlock } from "../render/renderGate.js";
+import { ERNAEHRUNG_KERN_FRAGEN, ERNAEHRUNG_TIEFE_FRAGEN, ERN_GATE } from "../../data/A11_ernaehrung.js";
 import { state } from "../state.js";
 
 function el(tag, className, text) {
@@ -49,11 +50,17 @@ export function registerErnaehrungStep() {
     estMinutes: 4,
     tiers: ["ganzheitlich", "tiefenanalyse"],
     render(container) {
-      const fragen =
-        state.meta.anamneseTiefe === "tiefenanalyse"
-          ? [...ERNAEHRUNG_KERN_FRAGEN, ...ERNAEHRUNG_TIEFE_FRAGEN]
-          : ERNAEHRUNG_KERN_FRAGEN;
-      return renderSectioned(container, fragen);
+      // Kern immer; der Vertiefungsblock (Tiefenanalyse) hängt hinter einem
+      // Bereichs-Gate und klappt bei „Nein" komplett zu (samt Unterüberschriften).
+      const cleanups = [renderSectioned(container, ERNAEHRUNG_KERN_FRAGEN)];
+      if (state.meta.anamneseTiefe === "tiefenanalyse") {
+        cleanups.push(
+          renderGatedBlock(container, ERN_GATE, (wrap) =>
+            renderSectioned(wrap, ERNAEHRUNG_TIEFE_FRAGEN)
+          )
+        );
+      }
+      return () => cleanups.forEach((fn) => fn && fn());
     },
   });
 }

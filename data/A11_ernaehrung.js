@@ -281,6 +281,14 @@ export const ERNAEHRUNG_KERN_FRAGEN = [
   },
 ];
 
+// Bereichs-Gate (Baum-Logik): erst „Ja" öffnet den Vertiefungsblock.
+export const ERN_GATE = {
+  id: "ERN-GATE",
+  frage: "Möchten Sie Ihre Ernährung vertiefen (metabolische Flexibilität, Essverhalten, Auslöser)? — bei „Nein“ überspringen wir diesen Teil.",
+  type: "yes_no",
+  required: false,
+};
+
 // ── TIEFE (Tiefenanalyse): metabolische Flexibilität, Essverhalten, Trigger ─
 export const ERNAEHRUNG_TIEFE_FRAGEN = [
   {

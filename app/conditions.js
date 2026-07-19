@@ -58,6 +58,22 @@ export function evaluateCondition(condition, answers) {
   return true;
 }
 
+/**
+ * Baum-Helfer: hängt jede Detailfrage hinter ein Bereichs-Gate. Erst wenn das
+ * Gate (yes_no) mit „Ja" (true) beantwortet ist, werden die Felder sichtbar.
+ * Eine bereits vorhandene eigene Bedingung der Frage bleibt erhalten
+ * (UND-verknüpft über { all: [...] }). Spart dem Patienten Zeit, wenn der
+ * Bereich für ihn kein Thema ist. Für flache Listen (renderFragenListe);
+ * für Blöcke mit Zwischenüberschriften siehe render/renderGate.js.
+ */
+export function hinterGate(gateId, felder) {
+  const gateCond = { field: gateId, equals: true };
+  return felder.map((f) => ({
+    ...f,
+    condition: f.condition ? { all: [gateCond, f.condition] } : gateCond,
+  }));
+}
+
 /** Format 2 — A06/A07/A09 "bedingung" Objekte ({feld, op, wert}) — identisch zu A06_gelenke_baum.js evalBedingung() */
 export function evalBedingung(bedingung, kontext) {
   if (!bedingung) return true;

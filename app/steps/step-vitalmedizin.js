@@ -8,21 +8,11 @@ import {
   IMMUN_FRAGEN,
   HORMON_GATE,
   IMMUN_GATE,
+  DARM_GATE,
 } from "../../data/A03_daniel_vitalmedizin.js";
 import { FAKTOREN_WOVEN_FRAGEN } from "../faktoren-mapping.js";
 import { state } from "../state.js";
-
-// Baum-Logik: die Detailfragen eines Bereichs erscheinen erst, wenn die
-// Gate-Frage mit „Ja" beantwortet ist. Eine bereits vorhandene eigene
-// Bedingung der Frage bleibt erhalten (UND-verknüpft). Spart Zeit, wenn der
-// Bereich für den Patienten kein Thema ist.
-function hinterGate(gateId, felder) {
-  const gateCond = { field: gateId, equals: true };
-  return felder.map((f) => ({
-    ...f,
-    condition: f.condition ? { all: [gateCond, f.condition] } : gateCond,
-  }));
-}
+import { hinterGate } from "../conditions.js";
 
 // Kuratiertes Hormon-/Stoffwechsel-Screening für die Tiefenanalyse:
 // die strukturierten Hormonfragen (D3) + NUR die nicht anderweitig erhobenen
@@ -45,9 +35,12 @@ const CORE_SECTIONS = [
   { titel: "Schlaf & Energie", felder: SCHLAF_ENERGIE_FRAGEN },
   { titel: "Beweglichkeit, Verbindung & Sinn", felder: FAKTOREN_WOVEN_FRAGEN },
 ];
+// Alle drei Tiefenanalyse-Sektionen sind gate-gesteuert: erst „Ja" öffnet die
+// Detailfragen (Zeitersparnis, wenn der Bereich kein Thema ist). Die Listen
+// sind flach (keine eigenen Zwischenüberschriften), daher genügt hier das
+// feld-weise hinterGate() — kein Block-Wrapper nötig.
 const DEEP_SECTIONS = [
-  { titel: "Darmgesundheit & Mikrobiom", felder: DARMGESUNDHEIT_FRAGEN },
-  // Gate-gesteuert: erst „Ja" öffnet die Detailfragen (Zeitersparnis).
+  { titel: "Darmgesundheit & Mikrobiom", felder: [DARM_GATE, ...hinterGate("DARM-GATE", DARMGESUNDHEIT_FRAGEN)] },
   { titel: "Hormone & Stoffwechsel", felder: [HORMON_GATE, ...hinterGate("HOR-GATE", HORMON_STOFFWECHSEL)] },
   { titel: "Immunsystem & Entzündung", felder: [IMMUN_GATE, ...hinterGate("IMM-GATE", IMMUN_FRAGEN)] },
 ];
