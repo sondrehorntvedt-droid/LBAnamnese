@@ -39,8 +39,17 @@ function buildGlobalFacts(answers) {
 const includesVal = (arr, val) => Array.isArray(arr) && arr.includes(val);
 
 const REGION_CONTEXT_BUILDERS = {
-  KIEFER_TMJ: (a) => ({
+  KIEFER_TMJ: (a, global) => ({
     kiefersperre: a["TMJ-004"] === "Mund kaum öffenbar",
+    bruxismus: a["TMJ-005"] === true,
+    kiefer_knacken: a["TMJ-003"] === "Knacken" || a["TMJ-003"] === "beides",
+    mundoeffnung_eingeschraenkt:
+      a["TMJ-004"] === "stark eingeschränkt (<2 Finger)" || a["TMJ-004"] === "Mund kaum öffenbar",
+    ohr_symptome: a["TMJ-006"] === true,
+    zahnbehandlung_kuerzlich: a["TMJ-007"] === true,
+    biss_veraendert: a["TMJ-008"] === true,
+    // Trauma + veränderte Okklusion = klassischer Frakturhinweis.
+    kiefer_frakturverdacht: (global?.trauma === true) && a["TMJ-008"] === true,
   }),
   KLAVIKULA: (a) => ({
     trauma: a["KLA-001"] === true,
@@ -190,6 +199,7 @@ const REGION_CONTEXT_BUILDERS = {
   }),
   BLASE: (a) => ({
     belastungsinkontinenz: a["BLA-003"] === "beim Husten/Niesen (Belastungsinkontinenz)",
+    rezidivierende_hwi: a["BLA-004"] === true,
   }),
   PROSTATA: (a) => ({
     schmerz_damm_akut: a["PRO-002"] === true,
@@ -199,6 +209,12 @@ const REGION_CONTEXT_BUILDERS = {
     postmenopausale_blutung: a["GYN-004"] === true,
     einseitige_unterbauchschmerzen: a["GYN-005"] === true,
     eileiterschwangerschaft_verdacht: a["GYN-D-001"] === true && a["GYN-D-002"] === true,
+    // Women's-Health-Erweiterung (Ausrichtung: Advisory Board / R. Molinari)
+    schwanger_aktuell: a["GYN-006"] === "ja",
+    geburten_gehabt: a["GYN-007"] === true,
+    senkungsgefuehl: a["GYN-008"] === true,
+    wechseljahre: a["GYN-009"] === true,
+    schwangere_blutung: a["GYN-006"] === "ja" && a["GYN-SS-004"] === true,
   }),
   ENDOKRIN: (a) => ({
     hypothyreose_symptome: a["END-001"] === true,

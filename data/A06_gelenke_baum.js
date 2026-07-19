@@ -66,7 +66,10 @@ export const GELENKE_BAUM = {
       { id: "TMJ-002", frage: "Haben Sie Schmerzen beim Kauen, Gähnen oder Mund öffnen?", type: "yes_no" },
       { id: "TMJ-003", frage: "Hören oder spüren Sie ein Knacken oder Reiben im Kiefer?", type: "single_choice", options: ["kein Geräusch", "Knacken", "Reiben/Knirschen", "beides"] },
       { id: "TMJ-004", frage: "Wie weit können Sie den Mund öffnen? (Daumen-Test)", type: "single_choice", options: ["normal (3 Finger)", "leicht eingeschränkt (2 Finger)", "stark eingeschränkt (<2 Finger)", "Mund kaum öffenbar"] },
-      { id: "TMJ-005", frage: "Haben Sie Zähne knirschen / Bruxismus (besonders nachts)?", type: "yes_no" }
+      { id: "TMJ-005", frage: "Haben Sie Zähne knirschen / Bruxismus (besonders nachts)?", type: "yes_no" },
+      { id: "TMJ-006", frage: "Haben Sie auf der betroffenen Seite Ohrsymptome (Ohrenschmerz, Druckgefühl, Tinnitus) ohne HNO-Befund?", type: "yes_no" },
+      { id: "TMJ-007", frage: "Gab es kürzlich eine lange Zahnbehandlung, Weisheitszahn-OP oder Narkose mit Beatmungsschlauch?", type: "yes_no" },
+      { id: "TMJ-008", frage: "Hat sich Ihr Biss verändert (die Zähne treffen anders aufeinander als früher)?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "trauma", op: "==", wert: true }, cdss_gewicht: { diskusverlagerung: +3, fraktur: +2 },
@@ -78,11 +81,48 @@ export const GELENKE_BAUM = {
           { id: "TMJ-B-003", frage: "Haben Sie gleichzeitig Kopfschmerzen, Nackenschmerzen oder Tinnitus?", type: "multiple_choice", options: ["Kopfschmerzen", "Nackenschmerzen", "Tinnitus", "Schwindel", "keines"] },
           { id: "TMJ-B-004", frage: "Tragen Sie eine Aufbissschiene?", type: "yes_no" }
         ]
+      },
+      // ── CMD-Vertiefung (Orientierung: DC/TMD, Schiffman et al. 2014) ──
+      { bedingung: { feld: "bruxismus", op: "==", wert: true }, cdss_gewicht: { cmd_myogen: +4, myofasziales_schmerzsyndrom: +2 },
+        fragen: [
+          { id: "TMJ-BRX-001", frage: "Sind Kiefer oder Kaumuskulatur morgens schmerzhaft oder müde?", type: "yes_no" },
+          { id: "TMJ-BRX-002", frage: "Wie ist der Stand bei der Aufbissschiene?", type: "single_choice", options: ["keine verordnet", "verordnet, trage ich selten", "trage ich regelmäßig"] },
+          { id: "TMJ-BRX-003", frage: "Knirschen/Pressen Sie in stressigen Phasen spürbar mehr?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "kiefer_knacken", op: "==", wert: true }, cdss_gewicht: { diskusverlagerung_mit_reposition: +4 },
+        fragen: [
+          { id: "TMJ-KNA-001", frage: "Wann knackt es?", type: "single_choice", options: ["beim Öffnen", "beim Schließen", "beim Öffnen UND Schließen (beidzeitig)"] },
+          { id: "TMJ-KNA-002", frage: "Ist das Knacken mit Schmerzen verbunden?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "mundoeffnung_eingeschraenkt", op: "==", wert: true }, cdss_gewicht: { diskusverlagerung_ohne_reposition: +4, cmd_arthrogen: +3 },
+        fragen: [
+          { id: "TMJ-MO-001", frage: "Kam die Einschränkung plötzlich oder allmählich?", type: "single_choice", options: ["plötzlich (über Nacht / an einem Tag)", "allmählich über Wochen"] },
+          { id: "TMJ-MO-002", frage: "Weicht der Unterkiefer beim Öffnen zur Seite ab?", type: "single_choice", options: ["nein", "nach links", "nach rechts"] }
+        ]
+      },
+      { bedingung: { feld: "ohr_symptome", op: "==", wert: true }, cdss_gewicht: { cmd_otologische_begleitsymptome: +3 },
+        fragen: [
+          { id: "TMJ-OHR-001", frage: "Wurden die Ohrsymptome bereits HNO-ärztlich abgeklärt?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "zahnbehandlung_kuerzlich", op: "==", wert: true }, cdss_gewicht: { postinterventionelle_tmj_beschwerden: +3 },
+        fragen: [
+          { id: "TMJ-ZB-001", frage: "Begannen die Beschwerden nach dieser Behandlung?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "biss_veraendert", op: "==", wert: true }, cdss_gewicht: { okklusionsstoerung: +3, diskusverlagerung_ohne_reposition: +2 },
+        fragen: [
+          { id: "TMJ-BV-001", frage: "Seit wann ist der Biss verändert?", type: "single_choice", options: ["seit einem Trauma/Unfall", "seit einer Zahnbehandlung", "schleichend, ohne Anlass"] }
+        ]
       }
     ],
     red_flags: [
       { bedingung: { feld: "kiefersperre", op: "==", wert: true }, cdss_gewicht: { diskusverlagerung_ohne_reposition: +5 },
-        hinweis: "Kiefersperre → sofortige oralchirurgische Abklärung" }
+        hinweis: "Kiefersperre → sofortige oralchirurgische Abklärung" },
+      { bedingung: { feld: "kiefer_frakturverdacht", op: "==", wert: true }, cdss_gewicht: { kieferfraktur: +5 },
+        hinweis: "Kiefertrauma mit Bissveränderung → Frakturverdacht: zahnärztliche/kieferchirurgische Abklärung mit Bildgebung, keine manuelle Behandlung vorher" }
     ]
   },
 

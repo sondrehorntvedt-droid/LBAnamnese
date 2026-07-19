@@ -94,4 +94,25 @@ export const GOLDEN_CASES = [
     regionen: [],
     answers: { "VP-001": 150, "VP-002": 95 },
   },
+  {
+    id: "GC-12",
+    name: "Kiefer: Bruxismus-Muster (CMD myogen)",
+    erwartung: "TMJ-005=ja öffnet den Bruxismus-Zweig (TMJ-BRX-*) mit Gewicht cmd_myogen.",
+    regionen: ["KIEFER_TMJ"],
+    answers: { "TMJ-005": true },
+  },
+  {
+    id: "GC-13",
+    name: "Kiefer: Trauma + Bissveränderung (Fraktur-Alarm)",
+    erwartung: "Unfall (HB-009) + TMJ-008=ja muss den Kieferfraktur-Red-Flag auslösen.",
+    regionen: ["KIEFER_TMJ"],
+    answers: { "HB-009": ["unfall"], "TMJ-008": true },
+  },
+  {
+    id: "GC-14",
+    name: "Gynäkologie: Schwangerschaft mit Blutung (Alarm)",
+    erwartung: "GYN-006=ja öffnet den Schwangerschafts-Zweig; +GYN-SS-004=ja muss den Klinik-Red-Flag auslösen.",
+    regionen: ["GYNAEKOLOGIE"],
+    answers: { "GYN-006": "ja", "GYN-SS-004": true },
+  },
 ];

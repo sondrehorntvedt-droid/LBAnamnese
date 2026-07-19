@@ -286,18 +286,25 @@ export const SYSTEMISCHE_BAUM = {
     screening: [
       { id: "BLA-001", frage: "Häufiger Harndrang, auch nachts?", type: "yes_no" },
       { id: "BLA-002", frage: "Schwacher Harnstrahl oder Harnverhalt?", type: "yes_no" },
-      { id: "BLA-003", frage: "Inkontinenz (ungewollter Urinverlust)?", type: "single_choice", options: ["nein", "beim Husten/Niesen (Belastungsinkontinenz)", "plötzlicher Harndrang (Urgency)", "ständiges Tröpfeln", "beides"] }
+      { id: "BLA-003", frage: "Inkontinenz (ungewollter Urinverlust)?", type: "single_choice", options: ["nein", "beim Husten/Niesen (Belastungsinkontinenz)", "plötzlicher Harndrang (Urgency)", "ständiges Tröpfeln", "beides"] },
+      { id: "BLA-004", frage: "Wiederkehrende Blasenentzündungen (3 oder mehr pro Jahr)?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "geschlecht", op: "==", wert: "m" },
         fragen: [
           { id: "BLA-M-001", frage: "Abgeschwächter Harnstrahl, Zögern beim Starten?", type: "yes_no" },
-          { id: "BLA-M-002", frage: "Wie ist der IPSS-Score einzuschätzen? (leicht/moderat/schwer)", type: "single_choice", options: ["leicht (selten Symptome)", "moderat (regelmäßig)", "schwer (täglich, nachts, häufig"] }
+          { id: "BLA-M-002", frage: "Wie ist der IPSS-Score einzuschätzen? (leicht/moderat/schwer)", type: "single_choice", options: ["leicht (selten Symptome)", "moderat (regelmäßig)", "schwer (täglich, nachts, häufig)"] }
         ],
         cdss_gewicht: { bph_prostata: +3 }
       },
       { bedingung: { feld: "belastungsinkontinenz", op: "==", wert: true }, cdss_gewicht: { belastungsinkontinenz: +4 },
-        fragen: [{ id: "BLA-B-001", frage: "Geburten (Anzahl, Geburtsgewichte)?", type: "textarea" }] }
+        fragen: [{ id: "BLA-B-001", frage: "Geburten (Anzahl, Geburtsgewichte)?", type: "textarea" }] },
+      { bedingung: { feld: "rezidivierende_hwi", op: "==", wert: true }, cdss_gewicht: { rezidivierende_zystitis: +3 },
+        fragen: [
+          { id: "BLA-HWI-001", frage: "Womit hängen die Blasenentzündungen zusammen?", type: "multiple_choice", options: ["Kälte/Nässe", "Geschlechtsverkehr", "wenig Trinken", "kein erkennbares Muster"] },
+          { id: "BLA-HWI-002", frage: "Wurde eine urologische Abklärung durchgeführt?", type: "yes_no" }
+        ]
+      }
     ]
   },
 
@@ -332,7 +339,13 @@ export const SYSTEMISCHE_BAUM = {
       { id: "GYN-002", frage: "Unregelmäßiger Zyklus oder Ausbleiben der Periode?", type: "yes_no" },
       { id: "GYN-003", frage: "Schmerzen beim Geschlechtsverkehr (Dyspareunie)?", type: "yes_no" },
       { id: "GYN-004", frage: "Blutungen außerhalb der Periode oder postmenopausal?", type: "yes_no" },
-      { id: "GYN-005", frage: "Krampfartige Unterbauchschmerzen, einseitig oder beidseitig?", type: "yes_no" }
+      { id: "GYN-005", frage: "Krampfartige Unterbauchschmerzen, einseitig oder beidseitig?", type: "yes_no" },
+      // Women's-Health-Erweiterung (Ausrichtung: Lindebergs Advisory Board —
+      // R. Molinari, DO: Schwangerschaft/Geburtshilfe; P. Hodges: Beckenboden)
+      { id: "GYN-006", frage: "Sind Sie aktuell schwanger?", type: "single_choice", options: ["nein", "ja", "unsicher / möglich"] },
+      { id: "GYN-007", frage: "Haben Sie Kinder geboren?", type: "yes_no" },
+      { id: "GYN-008", frage: "Haben Sie ein Senkungs- oder Fremdkörpergefühl im Becken (v.a. abends / nach Belastung)?", type: "yes_no" },
+      { id: "GYN-009", frage: "Sind Sie in den Wechseljahren oder danach?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "dysmenorrhoe", op: "==", wert: true }, cdss_gewicht: { endometriose: +3, adenomyose: +2 },
@@ -348,11 +361,42 @@ export const SYSTEMISCHE_BAUM = {
           { id: "GYN-D-001", frage: "Könnte eine Schwangerschaft bestehen?", type: "yes_no" },
           { id: "GYN-D-002", frage: "Schwindel, Ohnmacht, Schockzeichen?", type: "yes_no" }
         ]
+      },
+      { bedingung: { feld: "schwanger_aktuell", op: "==", wert: true }, cdss_gewicht: { schwangerschaftsassoziierte_beschwerden: +4, beckenguertel_schmerz: +3 },
+        fragen: [
+          { id: "GYN-SS-001", frage: "In welcher Schwangerschaftswoche sind Sie (ungefähr)?", type: "number" },
+          { id: "GYN-SS-002", frage: "Welche Beschwerden haben Sie in der Schwangerschaft?", type: "multiple_choice", options: ["Rückenschmerzen", "Becken-/ISG-Schmerzen", "Symphysenschmerzen (Schambein)", "Ischias-Beschwerden", "Nacken-/Schulterverspannungen", "Atembeschwerden", "Sodbrennen/Reflux", "Übelkeit", "Wassereinlagerungen", "keine"] },
+          { id: "GYN-SS-003", frage: "Gilt Ihre Schwangerschaft als Risikoschwangerschaft?", type: "yes_no" },
+          { id: "GYN-SS-004", frage: "Haben Sie aktuell Blutungen oder ungewöhnlich starke Bauchschmerzen?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "geburten_gehabt", op: "==", wert: true }, cdss_gewicht: { postpartale_dysfunktion: +3, beckenboden_dysfunktion: +2 },
+        fragen: [
+          { id: "GYN-PP-001", frage: "Wie viele Geburten?", type: "single_choice", options: ["1", "2", "3 oder mehr"] },
+          { id: "GYN-PP-002", frage: "War ein Kaiserschnitt dabei?", type: "yes_no" },
+          { id: "GYN-PP-003", frage: "Gab es eine größere Geburtsverletzung (z.B. höhergradiger Dammriss)?", type: "yes_no" },
+          { id: "GYN-PP-004", frage: "Was besteht seit der Geburt?", type: "multiple_choice", options: ["Rektusdiastase (Bauchspalte)", "Beckenbodenschwäche / Urinverlust", "Beschwerden an der Kaiserschnittnarbe", "Rückenschmerzen", "Schmerzen beim Geschlechtsverkehr", "nichts davon"] }
+        ]
+      },
+      { bedingung: { feld: "senkungsgefuehl", op: "==", wert: true }, cdss_gewicht: { organsenkung: +4, beckenboden_dysfunktion: +3 },
+        fragen: [
+          { id: "GYN-BB-001", frage: "Verstärkt sich das Gefühl beim Heben, Husten oder langem Stehen?", type: "yes_no" },
+          { id: "GYN-BB-002", frage: "Wurde das bereits gynäkologisch abgeklärt?", type: "yes_no" }
+        ]
+      },
+      { bedingung: { feld: "wechseljahre", op: "==", wert: true }, cdss_gewicht: { klimakterisches_syndrom: +3 },
+        fragen: [
+          { id: "GYN-MP-001", frage: "Welche Wechseljahresbeschwerden haben Sie?", type: "multiple_choice", options: ["Hitzewallungen/Schwitzen", "Schlafstörungen", "Stimmungsschwankungen", "Gelenk-/Muskelbeschwerden", "Scheidentrockenheit", "keine"] },
+          { id: "GYN-MP-002", frage: "Nehmen Sie eine Hormonersatztherapie?", type: "yes_no" }
+        ]
       }
     ],
     red_flags: [
       { bedingung: { feld: "eileiterschwangerschaft_verdacht", op: "==", wert: true },
-        cdss_gewicht: { eileiterschwangerschaft: +5 }, hinweis: "Schwangerschaft + einseitiger Schmerz + Schock → 112" }
+        cdss_gewicht: { eileiterschwangerschaft: +5 }, hinweis: "Schwangerschaft + einseitiger Schmerz + Schock → 112" },
+      { bedingung: { feld: "schwangere_blutung", op: "==", wert: true },
+        cdss_gewicht: { schwangerschaftskomplikation: +5 },
+        hinweis: "Blutung oder starke Schmerzen in der Schwangerschaft → sofort gynäkologische Abklärung / Klinik, keine manuelle Behandlung vorher" }
     ]
   },
 
