@@ -17,6 +17,7 @@ import { compute7FaktorenAbgeleitet } from "./faktoren-mapping.js";
 import { computeHormonProfil } from "./hormon.js";
 import { computeDarmProfil } from "./darm.js";
 import { computeImmunProfil } from "./immun.js";
+import { computeLichtProfil } from "./licht.js";
 import { computeWHO5 } from "./faktoren-mapping.js";
 import { GOLDEN_CASES } from "../tests/golden/cases.js";
 
@@ -40,6 +41,7 @@ function bewerteFall(fall) {
   const hormon = computeHormonProfil(fall.answers);
   const darm = computeDarmProfil(fall.answers);
   const immun = computeImmunProfil(fall.answers);
+  const licht = computeLichtProfil(fall.answers);
   const who5 = computeWHO5(fall.answers);
   return {
     regionen,
@@ -49,6 +51,7 @@ function bewerteFall(fall) {
     hormon: JSON.parse(JSON.stringify(hormon)),
     darm: JSON.parse(JSON.stringify(darm)),
     immun: JSON.parse(JSON.stringify(immun)),
+    licht: JSON.parse(JSON.stringify(licht)),
     who5: JSON.parse(JSON.stringify(who5)),
   };
 }

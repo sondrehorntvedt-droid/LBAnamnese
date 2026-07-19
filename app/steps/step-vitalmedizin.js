@@ -10,6 +10,7 @@ import {
   IMMUN_GATE,
   DARM_GATE,
 } from "../../data/A03_daniel_vitalmedizin.js";
+import { LICHT_GATE, LICHT_FRAGEN } from "../../data/A22_licht_circadian.js";
 import { FAKTOREN_WOVEN_FRAGEN } from "../faktoren-mapping.js";
 import { state } from "../state.js";
 import { hinterGate } from "../conditions.js";
@@ -43,6 +44,7 @@ const DEEP_SECTIONS = [
   { titel: "Darmgesundheit & Mikrobiom", felder: [DARM_GATE, ...hinterGate("DARM-GATE", DARMGESUNDHEIT_FRAGEN)] },
   { titel: "Hormone & Stoffwechsel", felder: [HORMON_GATE, ...hinterGate("HOR-GATE", HORMON_STOFFWECHSEL)] },
   { titel: "Immunsystem & Entzündung", felder: [IMMUN_GATE, ...hinterGate("IMM-GATE", IMMUN_FRAGEN)] },
+  { titel: "Licht & Rhythmus", felder: [LICHT_GATE, ...hinterGate("LICHT-GATE", LICHT_FRAGEN)] },
 ];
 
 export function registerVitalmedizinStep() {

@@ -23,6 +23,7 @@ import { computeVitalstoffProfil } from "../vitalstoff.js";
 import { computeHormonProfil } from "../hormon.js";
 import { computeDarmProfil } from "../darm.js";
 import { computeImmunProfil } from "../immun.js";
+import { computeLichtProfil } from "../licht.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
 import { state } from "../state.js";
 
@@ -828,6 +829,32 @@ function renderKlinik(container, s, therapistMode) {
       ul.style.margin = "4px 0 0";
       im.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
       imCard.appendChild(ul);
+    }
+  }
+
+  // 3f) Vitalmedizin: Licht- & Circadian-Hygiene (deterministisch).
+  const li = computeLichtProfil(state.answers);
+  if (li.pruefen.length || li.beratung.length) {
+    const liCard = sektion(container, "Vitalmedizin — Licht- & Circadian-Hygiene");
+    liCard.appendChild(
+      el("p", "field-hint", "Aus Licht-/Rhythmus-/Schichtangaben abgeleitete Hygiene- und Diagnostik-Vorschläge — keine Diagnose. Experimentelle Angaben (Frontier/Biohacking) fließen bewusst nicht ein.")
+    );
+    if (li.pruefen.length) {
+      const l = el("div", "section-label", "Diagnostik erwägen");
+      l.style.marginTop = "12px";
+      liCard.appendChild(l);
+      liCard.appendChild(
+        tabelle(["Untersuchung", "Anlass (aus Anamnese)"], li.pruefen.map((p) => [p.marker, p.gruende.join("; ")]))
+      );
+    }
+    if (li.beratung.length) {
+      const l = el("div", "section-label", "Licht-/Circadian-Maßnahmen");
+      l.style.marginTop = "12px";
+      liCard.appendChild(l);
+      const ul = el("ul");
+      ul.style.margin = "4px 0 0";
+      li.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
+      liCard.appendChild(ul);
     }
   }
 

@@ -182,4 +182,11 @@ export const GOLDEN_CASES = [
     regionen: ["MITTELFUSS"],
     answers: { "MF-005": true, "PMH-001": ["diabetes"] },
   },
+  {
+    id: "GC-24",
+    name: "Licht: Wechselschicht + wenig Tageslicht + helles Schlafzimmer",
+    erwartung: "LR-001 wechselschicht (Vit-D/Metabolik + IARC-2A-Aufklärung), LR-002 unter30 (Tageslicht), LR-003 fensterlos, LR-004 geraet (Verdunkelung), LR-005=nein (Abendlicht dämpfen). Frontier/Biohacking bleiben ungewertet.",
+    regionen: [],
+    answers: { "LR-001": "wechselschicht", "LR-002": "unter30", "LR-003": "fensterlos", "LR-004": "geraet", "LR-005": false },
+  },
 ];
