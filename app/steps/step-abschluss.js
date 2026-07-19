@@ -190,6 +190,31 @@ function kreuzListe(card, eintraege, farbe) {
   card.appendChild(ul);
 }
 
+// Wiederholbare Einträge (OPs, Unfälle, Medikamente, Familie, Interventionen)
+// als echte Tabelle statt Fließzeile — deutlich übersichtlicher.
+function antwortAlsTabelle(card, def, label, value) {
+  if (!def || def.type !== "repeatable_entry") return false;
+  if (!Array.isArray(value) || !value.length || !Array.isArray(def.fields) || !def.fields.length) return false;
+  const l = el("div", null, label);
+  l.style.fontWeight = "var(--weight-medium)";
+  l.style.margin = "10px 0 4px";
+  card.appendChild(l);
+  card.appendChild(
+    tabelle(
+      def.fields.map((f) => f.label),
+      value.map((eintrag) =>
+        def.fields.map((f) => {
+          const v = eintrag ? eintrag[f.key] : null;
+          if (v === true) return "Ja";
+          if (v === false) return "Nein";
+          return v == null || v === "" ? "—" : String(v);
+        })
+      )
+    )
+  );
+  return true;
+}
+
 // Sicherheits-Kontrollfragen (RF001–RF008): wie viele beantwortet, welche positiv.
 function safetyStatus(a) {
   const positive = [];
@@ -232,10 +257,17 @@ function renderVollstaendig(container, s, therapistMode) {
   const antwortTxt = (id) => (id in a ? formatAntwort(id, a[id]) : null);
   const zeige = (card, id, labelOverride) => {
     if (consumed.has(id)) return false;
+    const def = getFrage(id);
+    const label = labelOverride || (def ? def.label : id);
+    // Wiederholbare Einträge (OPs, Unfälle, Medikamente, Familie …) → Tabelle.
+    if (id in a && antwortAlsTabelle(card, def, label, a[id])) {
+      consumed.add(id);
+      return true;
+    }
     const t = antwortTxt(id);
     if (t == null) return false;
     consumed.add(id);
-    qaRow(card, labelOverride || (getFrage(id) ? getFrage(id).label : id), t);
+    qaRow(card, label, t);
     return true;
   };
   const zeigeAlle = (card, ids) => ids.reduce((n, id) => n + (zeige(card, id) ? 1 : 0), 0);
@@ -325,7 +357,22 @@ function renderVollstaendig(container, s, therapistMode) {
     // Risikoprofil (Ampel + Technikwahl) — therapist only, direkt beim Flags-Block.
     if (therapistMode) renderRisikoprofil(container, s.therapist.risikoprofil);
 
-    // ── 02 · AKTUELLE BESCHWERDEN (Fließtext + Vertiefung) ──
+    // ── 02 · ZIELE & ERWARTUNGEN ── (patientenzentriert: direkt nach der
+    // Sicherheit — der Behandler sieht sofort, WOFÜR der Patient kommt.)
+    const zieleCard = sektionNr(container, ++nr, "Ziele & Erwartungen");
+    if (s.ziele.length) {
+      s.ziele.forEach((ziel) => {
+        const row = el("div");
+        row.style.marginBottom = "8px";
+        row.appendChild(el("strong", null, ziel.zielText || "Ziel"));
+        row.appendChild(el("p", "field-hint", [ziel.lebensbereich, ziel.fokus, ziel.zeitrahmen].filter(Boolean).join(" · ")));
+        zieleCard.appendChild(row);
+      });
+    } else {
+      zieleCard.appendChild(el("p", "field-hint", "Keine Ziele erfasst."));
+    }
+
+    // ── 03 · AKTUELLE BESCHWERDEN (Fließtext + Vertiefung) ──
     const W_TEXT_IDS = ["HB-001", "HB-003", "HB-004", "HB-005", "HB-006", "HB-007", "HB-008", "HB-009", "HB-010", "HB-011", "HB-012", "HB-013"];
     const besch = sektionNr(container, ++nr, "Aktuelle Beschwerden");
     if (!s.beschwerden.length) besch.appendChild(el("p", "field-hint", "Keine Beschwerden erfasst."));
@@ -402,13 +449,13 @@ function renderVollstaendig(container, s, therapistMode) {
     const n04 = zeigeAlle(vor, ["PMH-001", "PMH-002", "PMH-001b", "PMH-CA-01", "PMH-CA-02", "PMH-CA-03", "PMH-CA-04", "PMH-CA-05", "PMH-CA-06", "PMH-CA-07"]);
     if (!n04) vor.appendChild(el("p", null, "Keine bekannten Vorerkrankungen angegeben."));
 
-    // ── 05 · TRAUMEN & OPERATIONEN ──
-    const op = sektionNr(container, ++nr, "Traumen & Operationen");
+    // ── 06 · OPERATIONEN, TRAUMEN & UNFÄLLE (tabellarisch) ──
+    const op = sektionNr(container, ++nr, "Operationen, Traumen & Unfälle");
     const n05 = zeigeAlle(op, ["PMH-003", "PMH-004", "PMH-005", "PMH-006"]);
     if (!n05) op.appendChild(el("p", null, "Keine Operationen oder relevanten Traumen angegeben."));
 
-    // ── 06 · MEDIKAMENTE & ALLERGIEN ──
-    const med = sektionNr(container, ++nr, "Medikamente & Allergien");
+    // ── 07 · MEDIKAMENTE, ALLERGIEN & IMPFUNGEN (tabellarisch) ──
+    const med = sektionNr(container, ++nr, "Medikamente, Allergien & Impfungen");
     let n06 = zeigeAlle(med, ["PMH-007", "PMH-008"]);
     // Blutverdünner/Kortison: bei „Ja" als rote Warnzeile (behandlungsrelevant).
     [["PMH-009", "Blutverdünner"], ["PMH-010", "Kortison / Steroide (länger)"]].forEach(([id, label]) => {
@@ -454,7 +501,8 @@ function renderVollstaendig(container, s, therapistMode) {
       if (s.beschwerden.length > 1) subKopf(beh, `Beschwerde ${i + 1} — ${b.region}`);
       if (zeilen.length) beh.appendChild(tabelle(["Therapie", "Erfolg", "Wie oft / wie lange"], zeilen));
       if (frei) qaRow(beh, "Weitere Therapieversuche", String(frei));
-      if (intervention) qaRow(beh, "Interventionen", formatAntwort("TH-INTERVENTION", intervention) || "");
+      if (intervention && !antwortAlsTabelle(beh, getFrage("TH-INTERVENTION"), "Interventionen (Spritzen / Infiltrationen)", intervention))
+        qaRow(beh, "Interventionen", formatAntwort("TH-INTERVENTION", intervention) || "");
     });
     if (!n08) beh.appendChild(el("p", null, "Keine Vorbehandlungen angegeben."));
 
@@ -531,24 +579,12 @@ function renderVollstaendig(container, s, therapistMode) {
     const n12 = zeigeAlle(spo, idsInGruppe("Sport & Bewegung"));
     if (!n12) spo.appendChild(el("p", "field-hint", "Nicht erhoben."));
 
-    // ── 13 · SOZIALANAMNESE & PSYCHE ──
-    const soz = sektionNr(container, ++nr, "Sozialanamnese & Psyche");
-    let n13 = zeigeAlle(soz, ["PMH-015", "PMH-016", "PMH-017"]);
-    n13 += zeigeAlle(soz, idsInGruppe("Psychosozial").filter((id) => !id.startsWith("PHQ4-")));
-    n13 += zeigeAlle(soz, idsInGruppe("Vitalität & Faktoren")); // eingewobene Relations-/Rise-Fragen
-    idsInGruppe("Psychosozial").forEach((id) => {
-      if (id.startsWith("PHQ4-")) consumed.add(id); // therapist_only — nie im Patiententext
-    });
-    if (!n13) soz.appendChild(el("p", "field-hint", "Nicht erhoben."));
-
-    // ── 14 · SCHLAF & ENERGIE ──
+    // ── 14 · SCHLAF & ENERGIE ── (Lifestyle-Block: Ernährung → Bewegung → Schlaf)
     const schlaf = sektionNr(container, ++nr, "Schlaf & Energie");
     const n14 = zeigeAlle(schlaf, idsInGruppe("Vitalmedizin").filter((id) => id.startsWith("D1-")));
     if (!n14) schlaf.appendChild(el("p", "field-hint", "Nicht erhoben."));
 
-    // ── 15–17 · HORMONE / IMMUNSYSTEM / LICHT — je eigener Abschnitt ──
-    // (Kein Sammel-Titel „Vitalmedizin-Vertiefung" mehr; Darm ist als
-    // Organthema in die Systemanamnese (Abschnitt 10) einsortiert.)
+    // Gemeinsamer Renderer für gate-gesteuerte Vertiefungen (eigener Abschnitt je Thema).
     const vertiefungsAbschnitt = (titel, ids, gateId) => {
       const card = sektionNr(container, ++nr, titel);
       const offen = ids.filter((id) => id in a && !consumed.has(id) && formatAntwort(id, a[id]) != null);
@@ -568,9 +604,24 @@ function renderVollstaendig(container, s, therapistMode) {
       });
     };
     const vmIds = idsInGruppe("Vitalmedizin");
+
+    // ── 15 · LICHT & RHYTHMUS ── (direkt hinter dem Schlaf — circadianes
+    // Paar; Ausrichtung Reiter/Panda: Licht ist der stärkste Schlaf-Hebel.)
+    vertiefungsAbschnitt("Licht & Rhythmus", idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "LICHT-GATE");
+
+    // ── 16 · SOZIALANAMNESE & PSYCHE ──
+    const soz = sektionNr(container, ++nr, "Sozialanamnese & Psyche");
+    let n16s = zeigeAlle(soz, ["PMH-015", "PMH-016", "PMH-017"]);
+    n16s += zeigeAlle(soz, idsInGruppe("Psychosozial").filter((id) => !id.startsWith("PHQ4-")));
+    n16s += zeigeAlle(soz, idsInGruppe("Vitalität & Faktoren")); // eingewobene Relations-/Rise-Fragen
+    idsInGruppe("Psychosozial").forEach((id) => {
+      if (id.startsWith("PHQ4-")) consumed.add(id); // therapist_only — nie im Patiententext
+    });
+    if (!n16s) soz.appendChild(el("p", "field-hint", "Nicht erhoben."));
+
+    // ── 17 · HORMONE & STOFFWECHSEL / 18 · IMMUNSYSTEM & ENTZÜNDUNG ──
     vertiefungsAbschnitt("Hormone & Stoffwechsel", vmIds.filter((id) => id === "HOR-GATE" || id.startsWith("D2-") || id.startsWith("D3-")), "HOR-GATE");
     vertiefungsAbschnitt("Immunsystem & Entzündung", vmIds.filter((id) => id === "IMM-GATE" || id.startsWith("IMM-")), "IMM-GATE");
-    vertiefungsAbschnitt("Licht & Rhythmus", idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "LICHT-GATE");
 
     // ── 16 · BEFUNDE & DOKUMENTE ──
     const bef = sektionNr(container, ++nr, "Befunde & Dokumente");
@@ -609,21 +660,9 @@ function renderVollstaendig(container, s, therapistMode) {
     }
     if (!n16) bef.appendChild(el("p", "field-hint", "Keine Befunde hochgeladen."));
 
-    // ── 17 · ZIELE & ERWARTUNGEN ──
-    const zieleCard = sektionNr(container, ++nr, "Ziele & Erwartungen");
-    if (s.ziele.length) {
-      s.ziele.forEach((ziel) => {
-        const row = el("div");
-        row.style.marginBottom = "8px";
-        row.appendChild(el("strong", null, ziel.zielText || "Ziel"));
-        row.appendChild(el("p", "field-hint", [ziel.lebensbereich, ziel.fokus, ziel.zeitrahmen].filter(Boolean).join(" · ")));
-        zieleCard.appendChild(row);
-      });
-    } else {
-      zieleCard.appendChild(el("p", "field-hint", "Keine Ziele erfasst."));
-    }
+    // (Ziele stehen jetzt vorn als Abschnitt 02 — patientenzentriert.)
 
-    // ── 18 · ERGÄNZUNGEN (Auffangnetz — nichts geht verloren) ──
+    // ── 20 · ERGÄNZUNGEN (Auffangnetz — nichts geht verloren) ──
     const restGruppen = new Map();
     Object.keys(INDEX).forEach((id) => {
       if (consumed.has(id) || id.startsWith("PHQ4-")) return;
@@ -663,8 +702,8 @@ function renderVollstaendig(container, s, therapistMode) {
     }
   }
 
-  // ── ZUSAMMENFASSUNG (wie PDF-Abschnitt 15) ──
-  const f = sektionNr(container, ++nr, "Zusammenfassung");
+  // ── ZUSAMMENFASSUNG & VITALITÄTSPROFIL (wie PDF-Abschnitt 15) ──
+  const f = sektionNr(container, ++nr, "Zusammenfassung & Vitalitätsprofil");
   if (!saeugling) {
     const canvas = document.createElement("canvas");
     canvas.style.width = "100%";
