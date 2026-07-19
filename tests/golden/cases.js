@@ -129,4 +129,11 @@ export const GOLDEN_CASES = [
     regionen: ["HANDGELENK"],
     answers: { "HG-003": true, "HG-D-001": true },
   },
+  {
+    id: "GC-17",
+    name: "Vitalstoff: vegan + PPI + Metformin (Prüfliste)",
+    erwartung: "Kombiniert zu B12/Eisen/Zink/Omega-3/Jod/Selen/Magnesium; B12 mit 3 Gründen (dedupliziert, sortiert).",
+    regionen: [],
+    answers: { "ERN-010": ["vegan"], "ERN-021": ["ppi", "metformin"], "ERN-020": "selten", "ERN-006": "nie" },
+  },
 ];

@@ -129,6 +129,31 @@ export const ERNAEHRUNG_KERN_FRAGEN = [
     ],
   },
   {
+    id: "ERN-005",
+    frage: "Wie viele Portionen Gemüse und Obst essen Sie täglich?",
+    type: "single_choice",
+    section: "Nahrungsqualität",
+    required: false,
+    options: [
+      { value: "unter1", label: "Kaum / weniger als 1 Portion" },
+      { value: "1_2", label: "1–2 Portionen" },
+      { value: "3_4", label: "3–4 Portionen" },
+      { value: "5plus", label: "5 und mehr Portionen" },
+    ],
+  },
+  {
+    id: "ERN-006",
+    frage: "Wie oft essen Sie Fisch (v.a. fetten Seefisch wie Lachs, Hering, Makrele)?",
+    type: "single_choice",
+    section: "Nahrungsqualität",
+    required: false,
+    options: [
+      { value: "nie", label: "Nie / sehr selten" },
+      { value: "1woche", label: "Etwa 1× pro Woche" },
+      { value: "2plus", label: "2× pro Woche oder öfter" },
+    ],
+  },
+  {
     id: "ERN-015",
     frage: "Haben Sie Nahrungsmittel-Unverträglichkeiten oder -Allergien?",
     type: "multiple_choice",
@@ -158,6 +183,93 @@ export const ERNAEHRUNG_KERN_FRAGEN = [
     required: false,
     condition: { field: "ERN-016", equals: true },
     placeholder: "z.B. Vitamin D 4000 IE, Omega-3 2g, Magnesium 300mg…",
+  },
+  // ── Vitalstoff-/Supplement-Screening (deterministische Prüfliste) ──
+  // Diese Felder speisen A17_vitalstoff_regeln.js → Therapeuten-Prüfliste
+  // (welche Laborwerte/Mikronährstoffe adressieren?). Keine Empfehlung an
+  // den Patienten ohne ärztliche/laborgestützte Einordnung.
+  {
+    id: "ERN-020",
+    frage: "Wie viel Tageslicht/Sonne bekommt Ihre Haut übers Jahr (ohne Sonnencreme, Arme/Gesicht)?",
+    type: "single_choice",
+    section: "Vitalstoff-Screening",
+    required: false,
+    options: [
+      { value: "selten", label: "Wenig — meist drinnen / bedeckt" },
+      { value: "mittel", label: "Mäßig" },
+      { value: "viel", label: "Viel — regelmäßig draußen" },
+    ],
+  },
+  {
+    id: "ERN-021",
+    frage: "Nehmen Sie eines dieser Medikamente dauerhaft? (Mehrfachauswahl — sie können den Nährstoffbedarf verändern)",
+    type: "multiple_choice",
+    section: "Vitalstoff-Screening",
+    required: false,
+    options: [
+      { value: "ppi", label: "Säureblocker / Magenschutz (z.B. Pantoprazol, Omeprazol)" },
+      { value: "metformin", label: "Metformin (Diabetes)" },
+      { value: "statin", label: "Cholesterinsenker (Statin)" },
+      { value: "diuretikum", label: "Entwässerungstablette (Diuretikum)" },
+      { value: "pille", label: "Antibabypille / Hormonpräparat" },
+      { value: "kortison", label: "Kortison (dauerhaft)" },
+      { value: "keine", label: "Keines davon" },
+    ],
+  },
+  {
+    id: "ERN-022",
+    frage: "Bemerken Sie eines dieser Zeichen an sich? (Mehrfachauswahl)",
+    type: "multiple_choice",
+    section: "Vitalstoff-Screening",
+    required: false,
+    options: [
+      { value: "kraempfe", label: "Muskelkrämpfe oder Lidzucken" },
+      { value: "infekte", label: "Häufige Infekte / Erkältungen" },
+      { value: "wundheilung", label: "Schlechte Wundheilung" },
+      { value: "haare_naegel", label: "Haarausfall oder brüchige Nägel" },
+      { value: "unruhige_beine", label: "Unruhige Beine (v.a. nachts)" },
+      { value: "blaesse", label: "Auffällige Blässe / starke Müdigkeit" },
+      { value: "keine", label: "Keines davon" },
+    ],
+  },
+  // ── Gewicht & Ernährungsziel ────────────────────────────────
+  {
+    id: "ERN-030",
+    frage: "Wie hat sich Ihr Gewicht in den letzten 6–12 Monaten entwickelt?",
+    type: "single_choice",
+    section: "Gewicht & Ziel",
+    required: false,
+    options: [
+      { value: "stabil", label: "Stabil" },
+      { value: "zunahme", label: "Zugenommen" },
+      { value: "abnahme_gewollt", label: "Abgenommen (gewollt)" },
+      { value: "abnahme_ungewollt", label: "Abgenommen (ungewollt)" },
+    ],
+  },
+  {
+    id: "ERN-031",
+    frage: "Wie schätzen Sie Ihr Gewicht selbst ein?",
+    type: "single_choice",
+    section: "Gewicht & Ziel",
+    required: false,
+    options: [
+      { value: "zu_niedrig", label: "Eher zu niedrig" },
+      { value: "passend", label: "Passend" },
+      { value: "etwas_zu_hoch", label: "Etwas zu hoch" },
+      { value: "deutlich_zu_hoch", label: "Deutlich zu hoch" },
+    ],
+  },
+  {
+    id: "ERN-032",
+    frage: "Möchten Sie mit unserer Unterstützung abnehmen?",
+    type: "single_choice",
+    section: "Gewicht & Ziel",
+    required: false,
+    options: [
+      { value: "nein", label: "Nein" },
+      { value: "ja_etwas", label: "Ja, etwas" },
+      { value: "ja_deutlich", label: "Ja, deutlich" },
+    ],
   },
   {
     id: "ERN-017",

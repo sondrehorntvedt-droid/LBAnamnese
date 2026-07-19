@@ -19,6 +19,7 @@ import { formatDatum } from "../format.js";
 import { FUNKTIONELLE_MARKER } from "../../data/A12_funktionelle_marker.js";
 import { INDEX, formatAntwort, getFrage } from "../anamnese-index.js";
 import { diagnoseLabel, diagnoseICD10, getBasistestsFuerRegion, computeSafetyIndikationen, getGesicherteDiagnosen } from "../klinik.js";
+import { computeVitalstoffProfil } from "../vitalstoff.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
 import { state } from "../state.js";
 
@@ -711,6 +712,37 @@ function renderKlinik(container, s, therapistMode) {
       );
     }
   });
+
+  // 3b) Vitalmedizin: Vitalstoff-/Supplement-Prüfliste (deterministisch).
+  const vs = computeVitalstoffProfil(state.answers);
+  if (vs.bmi || vs.pruefen.length || vs.beratung.length) {
+    const vsCard = sektion(container, "Vitalmedizin — Vitalstoff- & Ernährungs-Prüfliste");
+    vsCard.appendChild(
+      el("p", "field-hint", "Aus der Ernährungs-/Medikamenten-/Zeichen-Anamnese abgeleitet. Prüfliste für Labor & Beratung — KEINE Dosierung ohne Laborbefund.")
+    );
+    if (vs.bmi) {
+      const b = el("div", "section-label", `BMI: ${vs.bmi.wert} — ${vs.bmi.kategorie}`);
+      b.style.marginTop = "8px";
+      vsCard.appendChild(b);
+    }
+    if (vs.pruefen.length) {
+      const l = el("div", "section-label", "Laborseitig prüfen");
+      l.style.marginTop = "12px";
+      vsCard.appendChild(l);
+      vsCard.appendChild(
+        tabelle(["Marker / Mikronährstoff", "Anlass (aus Anamnese)"], vs.pruefen.map((p) => [p.marker, p.gruende.join("; ")]))
+      );
+    }
+    if (vs.beratung.length) {
+      const l = el("div", "section-label", "Beratungspunkte");
+      l.style.marginTop = "12px";
+      vsCard.appendChild(l);
+      const ul = el("ul");
+      ul.style.margin = "4px 0 0";
+      vs.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
+      vsCard.appendChild(ul);
+    }
+  }
 
   // 4) Osteopathische Short-Routine — wird ohnehin vollständig durchgeführt.
   const osteo = sektion(container, "Osteopathische Short-Routine (immer vollständig)");

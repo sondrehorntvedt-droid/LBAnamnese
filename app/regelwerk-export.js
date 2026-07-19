@@ -15,6 +15,7 @@ import { SYSTEMISCHE_BAUM } from "../data/A07_systemisch_baum.js";
 import { SAFETY_TESTS, BASISTESTS, OSTEO_ROUTINE, HB002_ZU_BASIS } from "../data/A14_testbatterie.js";
 import { ABSOLUTE_RED_FLAGS, YELLOW_FLAGS, YELLOW_FLAG_RISK_LEVELS } from "../data/cdss/00_red_flags.js";
 import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE, SAEUGLING_RED_FLAGS } from "../data/A16_saeugling_eltern.js";
+import { VITALSTOFF_REGELN } from "../data/A17_vitalstoff_regeln.js";
 import { INDEX } from "./anamnese-index.js";
 import { buildManifest } from "./manifest.js";
 
@@ -43,6 +44,7 @@ export function baueRegelwerk(version) {
       abschnitte: SAEUGLING_ABSCHNITTE,
       red_flags: SAEUGLING_RED_FLAGS,
     },
+    vitalstoff_regeln: VITALSTOFF_REGELN,
     umfang: buildManifest(),
   };
 }
