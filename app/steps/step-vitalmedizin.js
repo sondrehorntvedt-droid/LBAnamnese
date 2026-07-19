@@ -6,9 +6,23 @@ import {
   STOFFWECHSEL_FRAGEN,
   HORMONSTATUS_FRAGEN,
   IMMUN_FRAGEN,
+  HORMON_GATE,
+  IMMUN_GATE,
 } from "../../data/A03_daniel_vitalmedizin.js";
 import { FAKTOREN_WOVEN_FRAGEN } from "../faktoren-mapping.js";
 import { state } from "../state.js";
+
+// Baum-Logik: die Detailfragen eines Bereichs erscheinen erst, wenn die
+// Gate-Frage mit „Ja" beantwortet ist. Eine bereits vorhandene eigene
+// Bedingung der Frage bleibt erhalten (UND-verknüpft). Spart Zeit, wenn der
+// Bereich für den Patienten kein Thema ist.
+function hinterGate(gateId, felder) {
+  const gateCond = { field: gateId, equals: true };
+  return felder.map((f) => ({
+    ...f,
+    condition: f.condition ? { all: [gateCond, f.condition] } : gateCond,
+  }));
+}
 
 // Kuratiertes Hormon-/Stoffwechsel-Screening für die Tiefenanalyse:
 // die strukturierten Hormonfragen (D3) + NUR die nicht anderweitig erhobenen
@@ -33,8 +47,9 @@ const CORE_SECTIONS = [
 ];
 const DEEP_SECTIONS = [
   { titel: "Darmgesundheit & Mikrobiom", felder: DARMGESUNDHEIT_FRAGEN },
-  { titel: "Hormone & Stoffwechsel", felder: HORMON_STOFFWECHSEL },
-  { titel: "Immunsystem & Entzündung", felder: IMMUN_FRAGEN },
+  // Gate-gesteuert: erst „Ja" öffnet die Detailfragen (Zeitersparnis).
+  { titel: "Hormone & Stoffwechsel", felder: [HORMON_GATE, ...hinterGate("HOR-GATE", HORMON_STOFFWECHSEL)] },
+  { titel: "Immunsystem & Entzündung", felder: [IMMUN_GATE, ...hinterGate("IMM-GATE", IMMUN_FRAGEN)] },
 ];
 
 export function registerVitalmedizinStep() {

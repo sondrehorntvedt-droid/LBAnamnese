@@ -37,6 +37,13 @@ function resolveValue(field, answers) {
 /** Format 1 — A00–A05 "condition" Objekte */
 export function evaluateCondition(condition, answers) {
   if (!condition) return true;
+
+  // Verknüpfte Bedingungen (für Bereichs-Gates + eigene Detail-Bedingung):
+  //   { all: [c1, c2] } → alle müssen zutreffen (UND)
+  //   { any: [c1, c2] } → mindestens eine (ODER)
+  if (Array.isArray(condition.all)) return condition.all.every((c) => evaluateCondition(c, answers));
+  if (Array.isArray(condition.any)) return condition.any.some((c) => evaluateCondition(c, answers));
+
   const value = resolveValue(condition.field, answers);
 
   if ("equals" in condition) return value === condition.equals;

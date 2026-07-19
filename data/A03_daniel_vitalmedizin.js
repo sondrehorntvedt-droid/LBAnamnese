@@ -713,6 +713,22 @@ export const DARMGESUNDHEIT_FRAGEN = [
   }
 ];
 
+// ── Bereichs-Gates (Baum-Logik: nur bei „Ja" öffnen sich die Detailfragen) ──
+export const HORMON_GATE = {
+  id: "HOR-GATE",
+  frage: "Möchten Sie den Bereich Hormone & Stoffwechsel ausfüllen? (Schilddrüse, Nebenniere/Stress, Zyklus/Wechseljahre, Testosteron, Blutzucker/Gewicht) — bei „Nein“ überspringen wir diesen Teil.",
+  type: "yes_no",
+  required: false,
+  section: "Hormone & Stoffwechsel",
+};
+export const IMMUN_GATE = {
+  id: "IMM-GATE",
+  frage: "Möchten Sie Angaben zu Allergien, Entzündungen/Autoimmunthemen und Infektanfälligkeit machen? — bei „Nein“ überspringen wir diesen Teil.",
+  type: "yes_no",
+  required: false,
+  section: "Immunsystem & Entzündung",
+};
+
 // ── IMMUNSYSTEM & ENTZÜNDUNG (Tiefenanalyse) ─────────────────────────────
 // Orientierung: „stille Entzündung"/Inflammaging (P. Attia; funktionelle
 // Medizin M. Hyman); Atopie & Autoimmunität. Speist app/immun.js.
