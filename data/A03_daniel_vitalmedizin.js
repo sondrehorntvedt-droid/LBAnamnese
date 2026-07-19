@@ -330,6 +330,25 @@ export const STOFFWECHSEL_FRAGEN = [
       { value: "keine", label: "Keine bekannten Unverträglichkeiten" }
     ]
   },
+  // ── Taille (metabolisches Syndrom / viszerales Fett — C. Means, IDF) ──
+  {
+    id: "D2-010",
+    frage: "Bauchumfang (Taille, in cm auf Nabelhöhe gemessen), falls bekannt",
+    type: "number",
+    unit: "cm",
+    required: false,
+    section: "Metabolisches Syndrom",
+    hint: "Richtwerte erhöht: Frauen ab ~80–88 cm, Männer ab ~94–102 cm."
+  },
+  // ── Osmotische Symptomtrias → Verdacht neu aufgetretener/entgleister
+  //    Diabetes (Red Flag über den globalen Wächter, siehe app/hormon.js) ─
+  {
+    id: "D2-011",
+    frage: "Haben Sie aktuell ungewöhnlich starken Durst, müssen sehr häufig Wasser lassen (auch nachts) UND haben ungewollt abgenommen?",
+    type: "yes_no",
+    required: false,
+    section: "Blutzucker / Insulinresistenz"
+  },
   {
     id: "D2-009",
     frage: "Haben Sie aktuelle Laborwerte, die für uns relevant sein könnten?",
@@ -451,6 +470,61 @@ export const HORMONSTATUS_FRAGEN = [
       { value: "stimmung_tief", label: "Anhaltend gedrückte Stimmung, Antriebslosigkeit" },
       { value: "hitzewallungen_m", label: "Hitzewallungen (Andropause)" },
       { value: "keine", label: "Keine dieser Symptome" }
+    ]
+  },
+  // ── Vertiefung Schilddrüse: Autoimmun-Familienanamnese (Hashimoto/Basedow
+  //    familiär gehäuft) ─────────────────────────────────────────────
+  {
+    id: "D3-009",
+    frage: "Gibt es in Ihrer Familie Schilddrüsen- oder Autoimmunerkrankungen (z.B. Hashimoto, Basedow)?",
+    type: "yes_no",
+    required: false,
+    section: "Schilddrüse"
+  },
+  // ── PCOS-Screen (Frauen mit unregelmäßigem/ausbleibendem Zyklus;
+  //    Orientierung Rotterdam-Kriterien) ────────────────────────────
+  {
+    id: "D3-010",
+    frage: "Bestehen zusätzlich zu Ihrem unregelmäßigen Zyklus: Akne, vermehrte Körper-/Gesichtsbehaarung oder Gewichtszunahme am Bauch?",
+    type: "multiple_choice",
+    required: false,
+    section: "Sexualhormone (Frauen)",
+    condition: { field: "D3-005", equals: "unregelmaessig" },
+    options: [
+      { value: "akne", label: "Akne / unreine Haut" },
+      { value: "hirsutismus", label: "Vermehrte Körper-/Gesichtsbehaarung" },
+      { value: "bauchfett", label: "Gewichtszunahme v.a. am Bauch" },
+      { value: "haarausfall", label: "Haarausfall am Kopf (männliches Muster)" },
+      { value: "keine", label: "Keines davon" }
+    ]
+  },
+  // ── Menopausen-Stadium (Orientierung: M.C. Haver, L. Newson, F. Gersh) ─
+  {
+    id: "D3-011",
+    frage: "Wie ist Ihr aktuelles Menopausen-Stadium?",
+    type: "single_choice",
+    required: false,
+    section: "Wechseljahre / Östrogenmangel",
+    condition: { field: "sd_geschlecht", equals: "f" },
+    options: [
+      { value: "praemenopausal", label: "Zyklus normal, keine Wechseljahres-Zeichen" },
+      { value: "perimenopause", label: "Perimenopause — Zyklus wird unregelmäßig, erste Beschwerden" },
+      { value: "postmenopause", label: "Postmenopause — seit über 12 Monaten keine Periode" },
+      { value: "unklar", label: "Weiß ich nicht genau" }
+    ]
+  },
+  // ── Zyklusbezogenes Training/Beschwerden (Orientierung: Stacy Sims) ──
+  {
+    id: "D3-012",
+    frage: "Verändern sich Beschwerden, Energie oder Leistungsfähigkeit deutlich im Verlauf Ihres Zyklus?",
+    type: "single_choice",
+    required: false,
+    section: "Sexualhormone (Frauen)",
+    condition: { field: "sd_geschlecht", equals: "f" },
+    options: [
+      { value: "stark", label: "Ja, deutlich (z.B. PMS, Energie-/Schmerzschwankungen)" },
+      { value: "etwas", label: "Etwas" },
+      { value: "nein", label: "Kaum / nicht" }
     ]
   },
   {

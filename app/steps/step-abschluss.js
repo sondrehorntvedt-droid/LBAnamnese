@@ -20,6 +20,7 @@ import { FUNKTIONELLE_MARKER } from "../../data/A12_funktionelle_marker.js";
 import { INDEX, formatAntwort, getFrage } from "../anamnese-index.js";
 import { diagnoseLabel, diagnoseICD10, getBasistestsFuerRegion, computeSafetyIndikationen, getGesicherteDiagnosen } from "../klinik.js";
 import { computeVitalstoffProfil } from "../vitalstoff.js";
+import { computeHormonProfil } from "../hormon.js";
 import { SAFETY_TESTS, OSTEO_ROUTINE } from "../../data/A14_testbatterie.js";
 import { state } from "../state.js";
 
@@ -741,6 +742,38 @@ function renderKlinik(container, s, therapistMode) {
       ul.style.margin = "4px 0 0";
       vs.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
       vsCard.appendChild(ul);
+    }
+  }
+
+  // 3c) Vitalmedizin: Hormon-/Endokrin-Laborpanel-Prüfliste (deterministisch).
+  const hz = computeHormonProfil(state.answers);
+  if (hz.taille || hz.panel.length || hz.beratung.length) {
+    const hzCard = sektion(container, "Vitalmedizin — Hormon-/Endokrin-Prüfliste");
+    hzCard.appendChild(
+      el("p", "field-hint", "Aus den Hormon-/Stoffwechsel-Symptomen abgeleitete Laborpanels zur ärztlichen Abklärung — KEINE Diagnose, keine Dosierung.")
+    );
+    if (hz.taille) {
+      const t = el("div", "section-label", `Taille: ${hz.taille.wert} cm${hz.taille.erhoeht ? " — erhöht (metabolisches Risiko)" : ""}`);
+      t.style.marginTop = "8px";
+      t.style.color = hz.taille.erhoeht ? "var(--color-status-yellow)" : "var(--color-text-muted)";
+      hzCard.appendChild(t);
+    }
+    if (hz.panel.length) {
+      const l = el("div", "section-label", "Laborpanel prüfen");
+      l.style.marginTop = "12px";
+      hzCard.appendChild(l);
+      hzCard.appendChild(
+        tabelle(["Laborwert", "Anlass (aus Anamnese)"], hz.panel.map((p) => [p.marker, p.gruende.join("; ")]))
+      );
+    }
+    if (hz.beratung.length) {
+      const l = el("div", "section-label", "Beratungspunkte");
+      l.style.marginTop = "12px";
+      hzCard.appendChild(l);
+      const ul = el("ul");
+      ul.style.margin = "4px 0 0";
+      hz.beratung.forEach((p) => ul.appendChild(el("li", null, `${p.punkt} — ${p.gruende.join("; ")}`)));
+      hzCard.appendChild(ul);
     }
   }
 

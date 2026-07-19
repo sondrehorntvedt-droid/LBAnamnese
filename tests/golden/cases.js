@@ -147,4 +147,11 @@ export const GOLDEN_CASES = [
       "D1-011": "moderat", "D1-008": 3,
     },
   },
+  {
+    id: "GC-19",
+    name: "Hormon: Frau, unregelmäßiger Zyklus + Hirsutismus (PCOS-Panel)",
+    erwartung: "D3-005=unregelmäßig öffnet Zyklus-Panel; +D3-010 Hirsutismus ergänzt PCOS-Panel (freies Testosteron/SHBG/Insulin).",
+    regionen: [],
+    answers: { "SD-004": "f", "D3-005": "unregelmaessig", "D3-010": ["hirsutismus", "akne"] },
+  },
 ];

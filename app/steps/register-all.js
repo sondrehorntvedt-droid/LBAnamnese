@@ -27,6 +27,7 @@ import { registerPsychosozialStep } from "./step-psychosozial.js";
 import { registerSiebenFaktorenStep } from "./step-sieben-faktoren.js";
 import { registerAbschlussStep } from "./step-abschluss.js";
 import { registerKontoStep } from "./step-konto.js";
+import { registerHormonRedFlags } from "../hormon.js";
 
 registerWelcomeStep();
 registerStammdatenStep();
@@ -51,3 +52,5 @@ registerSiebenFaktorenStep();
 registerAbschlussStep();
 // Konto & Cloud-Speicherung — bewusst ganz am Ende der Sidebar.
 registerKontoStep();
+// Endokrine Red-Flag-Quelle am globalen Wächter anmelden (kein eigener Schritt).
+registerHormonRedFlags();
