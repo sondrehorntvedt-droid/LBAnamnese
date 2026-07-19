@@ -6,9 +6,10 @@
  * VORLÄUFIGE FASSUNG — wird mit dem Lindebergs-Kinderosteopathie-Team
  * (OST-PÄD OAM, Advisory Board) fachlich verfeinert.
  */
-import { registerStep } from "../router.js";
+import { registerStep, goToStepId } from "../router.js";
 import { renderFragenListe } from "../render/renderFragenListe.js";
 import { registerRedFlagSource } from "../redflags.js";
+import { state } from "../state.js";
 import {
   SAEUGLING_INTRO,
   SAEUGLING_ABSCHNITTE,
@@ -43,6 +44,26 @@ export function registerSaeuglingStep() {
     estMinutes: 9,
     isVisible: (answers) => answers["PT-001"] === "saeugling",
     render(container) {
+      // Ein-Klick-Umschaltung zurück zur Erwachsenen-Anamnese — behebt die
+      // „Baby-Falle": nicht mehr mühsam Schritt für Schritt zurück und die
+      // Für-wen-Frage neu beantworten, sondern ein Klick.
+      const switcher = el("div", "card card--sunken");
+      switcher.style.display = "flex";
+      switcher.style.flexWrap = "wrap";
+      switcher.style.alignItems = "center";
+      switcher.style.justifyContent = "space-between";
+      switcher.style.gap = "12px";
+      switcher.style.marginBottom = "16px";
+      switcher.appendChild(el("span", "field-label", "Fragebogen für: Baby / Kleinkind (0–24 Monate)"));
+      const switchBtn = el("button", "btn btn--ghost", "↺ Zur Erwachsenen-Anamnese wechseln");
+      switchBtn.type = "button";
+      switchBtn.addEventListener("click", () => {
+        state.set("PT-001", "erwachsener");
+        goToStepId("patient-typ");
+      });
+      switcher.appendChild(switchBtn);
+      container.appendChild(switcher);
+
       const badge = el("span", "badge badge--provisional", "Vorläufige Fassung — wird mit dem Kinderosteopathie-Team verfeinert");
       container.appendChild(badge);
 

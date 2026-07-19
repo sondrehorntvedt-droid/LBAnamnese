@@ -68,7 +68,7 @@ export const SAEUGLING_ABSCHNITTE = [
       {
         id: "SGL-001",
         frage: "Welche Themen treffen zu? (Mehrfachauswahl möglich)",
-        type: "multi_choice",
+        type: "multiple_choice",
         required: true,
         options: [
           { value: "anpassung_geburt", label: "Anpassungsstörungen nach der Geburt" },
@@ -121,7 +121,7 @@ export const SAEUGLING_ABSCHNITTE = [
       {
         id: "SGL-SS-02",
         frage: "Welche Besonderheiten traten auf?",
-        type: "multi_choice",
+        type: "multiple_choice",
         required: false,
         condition: { field: "SGL-SS-01", equals: "komplikationen" },
         options: [
@@ -215,7 +215,7 @@ export const SAEUGLING_ABSCHNITTE = [
       {
         id: "SGL-GEB-06",
         frage: "Gab es Komplikationen bei der Geburt?",
-        type: "multi_choice",
+        type: "multiple_choice",
         required: false,
         options: [
           { value: "keine", label: "Keine" },

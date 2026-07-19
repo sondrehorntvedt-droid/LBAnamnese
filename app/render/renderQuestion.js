@@ -392,6 +392,7 @@ export function renderQuestion(question, { getValue, setValue }) {
         setValue,
       });
       break;
+    case "multi_choice": // Alias/Schreibvariante von multiple_choice (Robustheit)
     case "multiple_choice":
       renderChoiceTiles({
         wrap,
