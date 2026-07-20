@@ -14,7 +14,7 @@ import { registerStep } from "../router.js";
 import { renderRadarChart } from "../render/renderRadarChart.js";
 import { renderTimeline } from "../render/renderTimeline.js";
 import { computeSummary } from "../summary.js";
-import { archiviereSitzung, starteNeueSitzung } from "../patient-record.js";
+import { archiviereSitzung, starteNeueSitzung, ladeAkte } from "../patient-record.js";
 import { formatDatum } from "../format.js";
 import { FUNKTIONELLE_MARKER } from "../../data/A12_funktionelle_marker.js";
 import { INDEX, formatAntwort, getFrage } from "../anamnese-index.js";
@@ -189,6 +189,75 @@ function kreuzListe(card, eintraege, farbe) {
     ul.appendChild(li);
   });
   card.appendChild(ul);
+}
+
+// Schmerz als Grafik (Sondre): farbcodierter 0–10-Balken für den heutigen
+// Stand (Ø HB-004, Spannweite max/min) + Mini-Verlaufskurve über frühere
+// archivierte Sitzungen derselben Region, sobald ≥2 datierte Werte da sind.
+function schmerzGrafik(card, b, a) {
+  const vas = a[`${b.id}::HB-004`];
+  if (vas == null || vas === "") return;
+  const maxW = a[`${b.id}::HB-005`];
+  const minW = a[`${b.id}::HB-006`];
+  const wrap = el("div");
+  wrap.style.margin = "6px 0 12px";
+  const kopf = el("div", "field-hint",
+    `Schmerz aktuell (NRS): Ø ${vas}/10${maxW != null && maxW !== "" ? ` · max ${maxW}` : ""}${minW != null && minW !== "" ? ` · min ${minW}` : ""}`);
+  kopf.style.fontWeight = "var(--weight-semibold)";
+  wrap.appendChild(kopf);
+  const track = el("div");
+  track.style.cssText = "height:10px;border-radius:999px;background:var(--color-surface-sunken);overflow:hidden;margin-top:4px;max-width:340px;";
+  const fill = el("div");
+  fill.style.cssText = `height:100%;width:${Math.min(10, Math.max(0, Number(vas))) * 10}%;background:${schmerzFarbe(Number(vas))};`;
+  track.appendChild(fill);
+  wrap.appendChild(track);
+
+  // Verlaufskurve (Schmerzkurve): frühere Sitzungen gleicher Region + heute.
+  try {
+    const punkte = [];
+    (ladeAkte().sitzungen || []).forEach((sess) => {
+      (sess.beschwerden || []).forEach((sb) => {
+        if (sb.region !== b.regionValue) return;
+        const v = sess.answers ? sess.answers[`${sb.id}::HB-004`] : null;
+        if (v != null && v !== "" && sess.datum) punkte.push({ datum: sess.datum, vas: Number(v) });
+      });
+    });
+    punkte.push({ datum: state.meta.sessionDatum || "", vas: Number(vas) });
+    if (punkte.length >= 2) {
+      const W = 340, H = 64, padX = 8, padY = 8;
+      const x = (i) => padX + (i * (W - 2 * padX)) / (punkte.length - 1);
+      const y = (v) => H - padY - (Math.min(10, Math.max(0, v)) / 10) * (H - 2 * padY);
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      svg.style.cssText = "max-width:340px;width:100%;display:block;margin-top:8px;";
+      const line = document.createElementNS(svgNS, "polyline");
+      line.setAttribute("points", punkte.map((p, i) => `${x(i)},${y(p.vas)}`).join(" "));
+      line.setAttribute("fill", "none");
+      line.setAttribute("stroke", "var(--color-sage-deep, #50654E)");
+      line.setAttribute("stroke-width", "2");
+      svg.appendChild(line);
+      punkte.forEach((p, i) => {
+        const dot = document.createElementNS(svgNS, "circle");
+        dot.setAttribute("cx", x(i));
+        dot.setAttribute("cy", y(p.vas));
+        dot.setAttribute("r", "3.5");
+        dot.setAttribute("fill", schmerzFarbe(p.vas));
+        svg.appendChild(dot);
+        const txt = document.createElementNS(svgNS, "text");
+        txt.setAttribute("x", x(i));
+        txt.setAttribute("y", y(p.vas) - 6);
+        txt.setAttribute("text-anchor", "middle");
+        txt.setAttribute("font-size", "9");
+        txt.setAttribute("fill", "var(--color-text-muted, #8a8a80)");
+        txt.textContent = String(p.vas);
+        svg.appendChild(txt);
+      });
+      wrap.appendChild(svg);
+      wrap.appendChild(el("p", "field-hint", `Schmerzkurve über ${punkte.length} Termine (ältester → heute).`));
+    }
+  } catch (e) { /* Verlauf ist optional — Balken bleibt */ }
+  card.appendChild(wrap);
 }
 
 // Wiederholbare Einträge (OPs, Unfälle, Medikamente, Familie, Interventionen)
@@ -410,6 +479,8 @@ function renderVollstaendig(container, s, therapistMode) {
         fl.style.lineHeight = "1.55";
         besch.appendChild(fl);
       }
+      // Schmerz als Grafik: Balken (heute) + Schmerzkurve über Termine.
+      schmerzGrafik(besch, b, a);
       // Übrige strukturierte Antworten dieser Beschwerde (CDSS-Vertiefung etc.);
       // Vorbehandlungen (TH-*) folgen gesammelt in Abschnitt Behandlungsanamnese.
       Object.keys(INDEX).forEach((id) => {
@@ -492,18 +563,20 @@ function renderVollstaendig(container, s, therapistMode) {
       THERAPIE_HISTORIE_MODALITAETEN.forEach((mod) => {
         const v = a[`${b.id}::${mod.id}`];
         if (v == null || v === "") return;
-        zeilen.push([
-          mod.label,
-          formatAntwort(mod.id, v) || String(v),
-          formatAntwort(`${mod.id}-haeufigkeit`, a[`${b.id}::${mod.id}-haeufigkeit`]) || "—",
-        ]);
+        // Neue zweidimensionale Dosierung (Anzahl + Frequenz); Altbestand
+        // (-haeufigkeit) als Fallback in der Anzahl-Spalte.
+        const anzahl =
+          formatAntwort(`${mod.id}-anzahl`, a[`${b.id}::${mod.id}-anzahl`]) ||
+          formatAntwort(`${mod.id}-haeufigkeit`, a[`${b.id}::${mod.id}-haeufigkeit`]) || "—";
+        const frequenz = formatAntwort(`${mod.id}-frequenz`, a[`${b.id}::${mod.id}-frequenz`]) || "—";
+        zeilen.push([mod.label, formatAntwort(mod.id, v) || String(v), anzahl, frequenz]);
       });
       const frei = a[`${b.id}::TH-FREI`];
       const intervention = a[`${b.id}::TH-INTERVENTION`];
       if (!zeilen.length && !frei && !intervention) return;
       n08++;
       if (s.beschwerden.length > 1) subKopf(beh, `Beschwerde ${i + 1} — ${b.region}`);
-      if (zeilen.length) beh.appendChild(tabelle(["Therapie", "Erfolg", "Wie oft / wie lange"], zeilen));
+      if (zeilen.length) beh.appendChild(tabelle(["Therapie", "Erfolg", "Wie oft gesamt", "Frequenz"], zeilen));
       if (frei) qaRow(beh, "Weitere Therapieversuche", String(frei));
       if (intervention && !antwortAlsTabelle(beh, getFrage("TH-INTERVENTION"), "Interventionen (Spritzen / Infiltrationen)", intervention))
         qaRow(beh, "Interventionen", formatAntwort("TH-INTERVENTION", intervention) || "");
@@ -950,6 +1023,31 @@ function renderKompakt(container, s, therapistMode) {
       : `${anrede}${name} stellt sich am ${datum} zur ganzheitlichen Analyse in unserer Praxis vor.`
   );
 
+  // 1b) Je Beschwerde ein Detail-Absatz (Sondre: „alles muss in die
+  // Kompaktfassung"): Verlauf, Auslöser, bessernd/verschlimmernd und die
+  // bisherige Therapie mit Dosierung (Anzahl × Frequenz) und Erfolg.
+  s.beschwerden.forEach((b) => {
+    const d = [];
+    if (fmt("HB-008", b.id)) d.push(`Verlauf: ${fmt("HB-008", b.id)}`);
+    if (fmt("HB-009", b.id)) d.push(`Auslöser: ${fmt("HB-009", b.id)}`);
+    if (fmt("HB-010", b.id)) d.push(`am schlimmsten: ${fmt("HB-010", b.id)}`);
+    if (fmt("HB-011", b.id)) d.push(`bessernd: ${fmt("HB-011", b.id)}`);
+    if (fmt("HB-012", b.id)) d.push(`verschlimmernd: ${fmt("HB-012", b.id)}`);
+    const th = [];
+    THERAPIE_HISTORIE_MODALITAETEN.forEach((mod) => {
+      const v = a[`${b.id}::${mod.id}`];
+      if (v == null || v === "") return;
+      const dosis = [
+        formatAntwort(`${mod.id}-anzahl`, a[`${b.id}::${mod.id}-anzahl`]) ||
+          formatAntwort(`${mod.id}-haeufigkeit`, a[`${b.id}::${mod.id}-haeufigkeit`]),
+        formatAntwort(`${mod.id}-frequenz`, a[`${b.id}::${mod.id}-frequenz`]),
+      ].filter(Boolean).join(", ");
+      th.push(`${mod.label.split(" / ")[0]}${dosis ? ` (${dosis})` : ""}: ${formatAntwort(mod.id, v) || v}`);
+    });
+    if (th.length) d.push(`Bisherige Therapie — ${th.join("; ")}`);
+    if (d.length) absatz(`Zur ${b.region}: ${d.join(". ")}.`);
+  });
+
   // 2) Anamnese-Absatz (Vorerkrankungen, OPs, Traumen)
   const anamneseSaetze = [];
   const dg = s.vorgeschichte.diagnosen.map((d) => DIAGNOSE_LABEL[d] || d);
@@ -1003,11 +1101,10 @@ function renderKompakt(container, s, therapistMode) {
   if (tlEvents.length) teil5.push(`Relevanter Verlauf: ${tlEvents.map((e) => `${e.jahr} ${e.text}`.trim()).join("; ")}.`);
   absatz(teil5.join(" "));
 
-  // 6) Ziele & Vitalität
-  const teil6 = [];
-  if (s.ziele.length) teil6.push(`Behandlungsziele: ${s.ziele.map((z) => z.zielText).filter(Boolean).map((t) => `„${t}“`).join("; ")}.`);
-  teil6.push(`Vitalitätsprofil (7 Faktoren): ${faktorenZeile(s.faktoren)}.`);
-  absatz(teil6.join(" "));
+  // 6) Ziele — die 7 Faktoren bleiben bewusst der vollständigen Anamnese
+  // vorbehalten (Sondre: Kompakt = klinischer Bericht, kein Vitalprofil).
+  if (s.ziele.length)
+    absatz(`Behandlungsziele: ${s.ziele.map((z) => z.zielText).filter(Boolean).map((t) => `„${t}“`).join("; ")}.`);
 
   // 7) Günstige Zeichen (Green Flags)
   const green = computeGreenFlags(a, s, safetyStatus(a));
@@ -1096,7 +1193,7 @@ function renderKlinik(container, s, therapistMode) {
   }
 
   container.appendChild(
-    el("p", "field-hint", "Entscheidungsunterstützung für die erste Untersuchung — keine fertige Diagnose. Die Tests dienen dazu, die Verdachtsdiagnosen gezielt zu erhärten oder auszuschließen und sicher zu behandeln.")
+    el("p", "field-hint", "Entscheidungsunterstützung für die erste Untersuchung — keine fertige Diagnose. Aufbau der Untersuchungs-Batterie (aus der Anamnese zusammengestellt): 1. Safety-Tests (symptomgeleitet) → 2. orthopädisch/neurologische Basistests je Region → 3. spezifische Tests (osteopathische Short-Routine, Risikoprofil/Technikwahl, trainingstherapeutische Hinweise). Die Differentialdiagnosen sind deterministisch abgeleitet und vom Behandlungsteam zu verifizieren — die Tests dienen dazu, sie gezielt zu erhärten oder auszuschließen.")
   );
 
   // 1) Risikoprofil + Safety-/Technik-Tests (bereits kategorisiert ortho/neuro/osteo).
@@ -1131,7 +1228,7 @@ function renderKlinik(container, s, therapistMode) {
     const card = sektion(container, `Differentialdiagnose — Beschwerde ${i + 1}: ${prio}${b.region}`);
 
     if (b.verdacht.length) {
-      card.appendChild(el("div", "section-label", "Verdacht (aus Anamnese abgeleitet)"));
+      card.appendChild(el("div", "section-label", "Differentialdiagnosen — deterministisch aus der Anamnese abgeleitet, bitte klinisch verifizieren"));
       card.appendChild(
         tabelle(
           ["Verdachtsdiagnose", "Score"],

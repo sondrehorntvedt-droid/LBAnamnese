@@ -23,7 +23,7 @@ import { SPORT_KERN_FRAGEN, SPORT_PERFORMANCE_FRAGEN, SPORT_GATE } from "../data
 import { ERNAEHRUNG_KERN_FRAGEN, ERNAEHRUNG_TIEFE_FRAGEN, ERN_GATE } from "../data/A11_ernaehrung.js";
 import { VITALPARAMETER_FRAGEN } from "../data/A15_vitalparameter.js";
 import { UPLOAD_KATEGORIEN } from "../data/A00c_uploads.js";
-import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEUFIGKEIT_OPTIONEN, THERAPIE_FREITEXT, INTERVENTION_FRAGEN } from "../data/A01b_therapie_historie.js";
+import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEUFIGKEIT_OPTIONEN, THERAPIE_ANZAHL_OPTIONEN, THERAPIE_FREQUENZ_OPTIONEN, THERAPIE_FREITEXT, INTERVENTION_FRAGEN } from "../data/A01b_therapie_historie.js";
 import { GELENKE_BAUM } from "../data/A06_gelenke_baum.js";
 import { SYSTEMISCHE_BAUM } from "../data/A07_systemisch_baum.js";
 import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE } from "../data/A16_saeugling_eltern.js";
@@ -129,6 +129,8 @@ addList(HAUPTBESCHWERDE_FRAGEN, "Beschwerde");
 THERAPIE_HISTORIE_MODALITAETEN.forEach((mod) => {
   INDEX[mod.id] = { label: "Vorbehandlung: " + mod.label, type: "single_choice", optionsMap: optionsMap(THERAPIE_ERFOLG_OPTIONEN), group: "Beschwerde" };
   INDEX[`${mod.id}-haeufigkeit`] = { label: mod.label + " — wie oft/lange", type: "single_choice", optionsMap: optionsMap(THERAPIE_HAEUFIGKEIT_OPTIONEN), group: "Beschwerde" };
+  INDEX[`${mod.id}-anzahl`] = { label: mod.label + " — wie oft insgesamt", type: "single_choice", optionsMap: optionsMap(THERAPIE_ANZAHL_OPTIONEN), group: "Beschwerde" };
+  INDEX[`${mod.id}-frequenz`] = { label: mod.label + " — Frequenz", type: "single_choice", optionsMap: optionsMap(THERAPIE_FREQUENZ_OPTIONEN), group: "Beschwerde" };
 });
 add(THERAPIE_FREITEXT, "Beschwerde");
 addList(INTERVENTION_FRAGEN, "Beschwerde");

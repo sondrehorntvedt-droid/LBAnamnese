@@ -12,7 +12,7 @@ import { registerStep } from "../router.js";
 import { renderQuestion } from "../render/renderQuestion.js";
 import { renderBodyMap } from "../render/bodymap.js";
 import { HAUPTBESCHWERDE_FRAGEN, getWOptionen } from "../../data/A01_hauptbeschwerde.js";
-import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEUFIGKEIT_OPTIONEN, THERAPIE_FREITEXT, INTERVENTION_FRAGEN } from "../../data/A01b_therapie_historie.js";
+import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_ANZAHL_OPTIONEN, THERAPIE_FREQUENZ_OPTIONEN, THERAPIE_FREITEXT, INTERVENTION_FRAGEN } from "../../data/A01b_therapie_historie.js";
 import { computeRegionPfadForBeschwerde, getRegionKeysForHB002Value, isSystemicKey } from "../cdss-engine.js";
 import {
   getBeschwerden,
@@ -219,13 +219,21 @@ function renderBeschwerdeCard(b, index, isOnly, onChangeRegion) {
         { getValue, setValue }
       )
     );
-    // Häufigkeit/Dauer erscheint erst, wenn die Therapie überhaupt versucht wurde.
+    // Dosierung erscheint erst, wenn die Therapie überhaupt versucht wurde —
+    // zweidimensional (Sondre): Gesamtanzahl UND Frequenz, denn 10 Sitzungen
+    // bei 1×/Monat sind etwas anderes als 10 Sitzungen bei 2×/Woche.
     if (getValue(mod.id)) {
       const hWrap = el("div");
       hWrap.style.margin = "-6px 0 4px 12px";
       hWrap.appendChild(
         renderQuestion(
-          { id: `${mod.id}-haeufigkeit`, frage: "Wie oft / wie lange?", type: "single_choice", options: THERAPIE_HAEUFIGKEIT_OPTIONEN },
+          { id: `${mod.id}-anzahl`, frage: "Wie oft insgesamt?", type: "single_choice", options: THERAPIE_ANZAHL_OPTIONEN },
+          { getValue, setValue }
+        )
+      );
+      hWrap.appendChild(
+        renderQuestion(
+          { id: `${mod.id}-frequenz`, frage: "In welcher Frequenz?", type: "single_choice", options: THERAPIE_FREQUENZ_OPTIONEN },
           { getValue, setValue }
         )
       );

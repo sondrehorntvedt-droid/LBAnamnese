@@ -17,10 +17,16 @@ export const THERAPIE_ERFOLG_OPTIONEN = [
   { value: "etwas", label: "Etwas (hilft leicht)" },
   { value: "nein", label: "Nein (keine Wirkung)" },
   { value: "nur_kurz", label: "Nur kurz (lindert nur kurzfristig)" },
+  // Klinisch wichtig (Sondre): Therapie kann auch VERSCHLECHTERN — ein
+  // starkes differentialdiagnostisches Signal (z.B. Richtungspräferenz,
+  // Reizzustand, falsche Dosierung).
+  { value: "schlechter", label: "Eher schlechter geworden" },
 ];
 
 // Umfang der Behandlung — wichtig, um „einmal ausprobiert" von „konsequent
 // über Monate durchgezogen" zu unterscheiden.
+// ALTBESTAND (bis v-8): eine kombinierte Frage. Bleibt für die Anzeige
+// alter Antworten erhalten — NEU wird zweidimensional erhoben (unten).
 export const THERAPIE_HAEUFIGKEIT_OPTIONEN = [
   { value: "1_2", label: "1–2 Mal" },
   { value: "3_5", label: "3–5 Mal" },
@@ -28,6 +34,24 @@ export const THERAPIE_HAEUFIGKEIT_OPTIONEN = [
   { value: "10_20", label: "~10–20 Sitzungen" },
   { value: "monate", label: "Über Monate (20+ Sitzungen)" },
   { value: "laufend", label: "Läuft aktuell noch" },
+];
+
+// Zwei getrennte Parameter (Sondre): GESAMTMENGE und FREQUENZ — zusammen
+// zeigen sie, ob eine Therapie ausreichend dosiert war, bevor man sie als
+// „wirkungslos" verwirft (10× bei 1×/Monat ≠ 10× bei 2×/Woche).
+export const THERAPIE_ANZAHL_OPTIONEN = [
+  { value: "1_2", label: "1–2 Mal insgesamt" },
+  { value: "3_5", label: "3–5 Mal" },
+  { value: "6_10", label: "6–10 Mal" },
+  { value: "11_20", label: "11–20 Mal" },
+  { value: "ueber_20", label: "Mehr als 20 Mal" },
+];
+export const THERAPIE_FREQUENZ_OPTIONEN = [
+  { value: "unter_1_woche", label: "Seltener als 1× pro Woche" },
+  { value: "1_woche", label: "1× pro Woche" },
+  { value: "2_woche", label: "2× pro Woche" },
+  { value: "3plus_woche", label: "3× pro Woche oder öfter" },
+  { value: "kur_intensiv", label: "Intensiv am Stück (z.B. Reha/Kur)" },
 ];
 
 // Freitext für Details, die das Raster nicht abbildet.
@@ -75,7 +99,7 @@ export const THERAPIE_HISTORIE_MODALITAETEN = [
   { id: "TH-06", label: "Akupunktur / Dry Needling" },
   { id: "TH-07", label: "Medizinisches Training / Reha" },
   { id: "TH-08", label: "Dehnung / Yoga" },
-  { id: "TH-09", label: "Fitness / Krafttraining" },
+  { id: "TH-09", label: "Fitness / Krafttraining / Personal Training" },
   { id: "TH-10", label: "Spritzen / Injektionen" },
   { id: "TH-11", label: "Medikamente (Schmerzmittel)" },
   { id: "TH-12", label: "Stoßwelle" },
