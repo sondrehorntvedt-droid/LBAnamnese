@@ -53,6 +53,20 @@ h1, h2, h3, .step-title {
   background: var(--color-surface-sunken);
   border: none;
 }
+/* Ink-Karte — die „dunkle Welt" als Akzentfläche (z.B. Patienten-Cover).
+   Scoped Tokens: alles darin (Hints, Trennlinien, Q→A-Zeilen) bleibt lesbar. */
+.card--ink {
+  background: var(--color-ink);
+  border-color: transparent;
+  color: var(--color-bone);
+  box-shadow: var(--shadow-lift);
+  --color-text-primary: var(--color-cloud);
+  --color-text-secondary: var(--color-bone);
+  --color-text-muted: #9AA39A;
+  --color-border: rgba(231, 228, 218, 0.16);
+  --color-primary: var(--color-cloud);
+  --color-secondary: #9AA39A;
+}
 
 /* ── Buttons — die Lindebergs-Signatur-Pill (Marcellus-Caps) ── */
 .btn {

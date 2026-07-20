@@ -143,8 +143,9 @@ function sektionNr(container, nr, titel) {
   head.style.gap = "10px";
   head.style.margin = "26px 0 8px";
   const badge = el("span", null, String(nr).padStart(2, "0"));
-  badge.style.background = "var(--color-terracotta, #E97132)";
-  badge.style.color = "#fff";
+  // Ink-Marker (invertiert automatisch im Dark Theme: dort Cloud auf Ink-Grund)
+  badge.style.background = "var(--color-text-primary)";
+  badge.style.color = "var(--color-bg)";
   badge.style.borderRadius = "8px";
   badge.style.padding = "2px 9px";
   badge.style.fontWeight = "var(--weight-semibold)";
@@ -284,10 +285,10 @@ function renderVollstaendig(container, s, therapistMode) {
     });
   }
 
-  // ── PATIENT (Kopf, unnummeriert) ──
+  // ── PATIENT (Kopf, unnummeriert) — Ink-Cover (die dunkle Markenfläche) ──
   const name = [s.grunddaten.vorname, s.grunddaten.nachname].filter(Boolean).join(" ");
-  const kopf = el("div", "card");
-  kopf.style.borderTop = "3px solid var(--color-primary)";
+  const kopf = el("div", "card card--ink");
+  kopf.style.borderTop = "3px solid var(--color-sage)";
   kopf.style.marginBottom = "6px";
   const nameEl = el("div", null, name || "Patient:in");
   nameEl.style.fontSize = "1.3rem";

@@ -27,18 +27,31 @@ html, body {
   min-height: 100vh;
 }
 
-/* ── Sidebar (Desktop) ───────────────────────────────────── */
+/* ── Sidebar (Desktop) — die Ink-Welt des Design Systems ─────
+   Das tiefe Dunkelgrün als ständige Markenfläche; der Inhaltsbereich
+   bleibt hell und übersichtlich. Kind-Elemente erben die Dark-Semantik
+   über scoped Tokens (Nav, Fortschritt, Footer passen sich automatisch an). */
 .app-sidebar {
   display: none;
   flex-direction: column;
   width: 280px;
   flex-shrink: 0;
   padding: var(--space-6) var(--space-5);
+  background: var(--color-ink);
   border-right: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  --color-text-primary: var(--color-cloud);
+  --color-text-secondary: var(--color-bone);
+  --color-text-muted: #9AA39A;
+  --color-border: rgba(231, 228, 218, 0.16);
+  --color-surface-sunken: rgba(231, 228, 218, 0.10);
+  --color-sage-tint: rgba(116, 139, 116, 0.24);
+  --color-forest-800: var(--color-cloud);
+  --color-forest-500: var(--color-sage);
+  --color-camel: #9AA39A;
 }
 
 /* Wordmark — Marcellus, Caps, weiteste Lindebergs-Sperrung */
@@ -105,14 +118,21 @@ html, body {
   border-top: 1px solid var(--color-border);
 }
 
-/* ── Mobile top bar (fallback below sidebar breakpoint) ──── */
+/* ── Mobile top bar — ebenfalls Ink-Welt (wie die Sidebar) ── */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--color-bg);
+  background: var(--color-ink);
   border-bottom: 1px solid var(--color-border);
   padding: var(--space-4) var(--space-5);
+  --color-text-primary: var(--color-cloud);
+  --color-text-secondary: var(--color-bone);
+  --color-text-muted: #9AA39A;
+  --color-border: rgba(231, 228, 218, 0.16);
+  --color-surface-sunken: rgba(231, 228, 218, 0.10);
+  --color-forest-800: var(--color-cloud);
+  --color-camel: #9AA39A;
 }
 
 .app-header__row {
