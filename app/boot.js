@@ -16,6 +16,7 @@ import {
   canGoNext,
   goNext,
   goPrev,
+  goToStepId,
 } from "./router.js";
 import { initRedFlagWatcher } from "./redflags.js";
 import { ensureSitzungInit } from "./patient-record.js";
@@ -45,6 +46,15 @@ export function startApp() {
     const sidebarFooter = el("div", "sidebar-footer");
     const timeEstimate = el("p", "field-hint", "");
     sidebarFooter.appendChild(timeEstimate);
+    // Immer erreichbarer Rückweg zum Ursprung („Für wen ist diese Anamnese?")
+    // — ein Klick genügt, egal wo man gerade steht (Wunsch Sondre: der Weg
+    // zurück aus dem Säuglings-/Kinder-Fragebogen darf nicht mühsam sein).
+    const fuerWenLink = el("button", "auth-link", "Für wen? (Erwachsener / Baby) ändern");
+    fuerWenLink.type = "button";
+    fuerWenLink.style.marginTop = "10px";
+    fuerWenLink.style.textAlign = "left";
+    fuerWenLink.addEventListener("click", () => goToStepId("patient-typ"));
+    sidebarFooter.appendChild(fuerWenLink);
     sidebar.appendChild(sidebarFooter);
 
     // ── Mobile top bar (fallback) ──────────────────────────
@@ -59,6 +69,12 @@ export function startApp() {
     track.appendChild(fill);
     progressWrap.appendChild(track);
     headerRow.appendChild(progressWrap);
+    // Mobiler Rückweg zum Ursprung (analog Sidebar-Footer)
+    const fuerWenMobil = el("button", "auth-link", "Für wen?");
+    fuerWenMobil.type = "button";
+    fuerWenMobil.style.flexShrink = "0";
+    fuerWenMobil.addEventListener("click", () => goToStepId("patient-typ"));
+    headerRow.appendChild(fuerWenMobil);
     header.appendChild(headerRow);
 
     // ── Content column ──────────────────────────────────────

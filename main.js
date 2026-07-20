@@ -12,8 +12,13 @@
 import { getSession } from "./app/supabase.js";
 import { renderAuthGate } from "./app/auth.js";
 import { initialSync } from "./app/cloud-sync.js";
+import { initTheme } from "./app/theme.js";
 
 const root = document.getElementById("app");
+
+// Hell/Dunkel-Umschalter sofort aktivieren — sichtbar auf JEDER Seite,
+// auch vor dem Login (Patientenwunsch: immer oben in der Ecke wechselbar).
+initTheme();
 
 function zeigeLadehinweis(text) {
   root.innerHTML = "";
