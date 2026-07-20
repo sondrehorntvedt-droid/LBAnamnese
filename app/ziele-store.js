@@ -17,14 +17,15 @@ export function addZiel() {
   if (list.length >= MAX_ZIELE) return null;
   const neu = {
     id: `z${Date.now()}${list.length}`,
-    // PSFS-Funktionsziel
-    aktivitaet: "",     // z.B. „25 Treppenstufen bis ins Schlafzimmer steigen"
-    baseline: null,     // aktuelle Fähigkeit 0–10 (PSFS)
-    target: 10,         // angestrebte Fähigkeit 0–10
-    lebensbereich: null,
+    kategorie: null,    // Ziel-Kategorie (A24 — steuert den Wenn-Baum)
+    aktivitaet: "",     // konkretes Ziel in eigenen Worten (ICF-Aktivitätsebene)
+    baseline: null,     // Baseline 0–10 (PSFS bzw. kategoriespezifische NRS)
+    target: 10,         // Zielwert 0–10
+    zielgewicht: "",    // nur Kategorie „abnehmen" (kg)
+    lebensbereich: null, // Altbestand (bis v-5) — wird nicht mehr abgefragt
     zeitrahmen: null,
     zieldatum: "",      // bei zeitrahmen === "zu_termin"
-    warum: "",          // warum wichtig (qualitativ/motivational)
+    warum: "",          // warum wichtig (qualitativ/motivational, GAS-Prinzip)
     prioritaet: list.length + 1,
   };
   state.setMeta({ ziele: [...list, neu] });

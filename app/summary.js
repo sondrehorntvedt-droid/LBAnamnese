@@ -20,6 +20,8 @@ import { computeYellowFlags } from "../data/A05_psychosozial_mental.js";
 import { computeBMI, getBMIKategorie, computeAlter } from "../data/A00_stammdaten.js";
 import { HAUPTBESCHWERDE_FRAGEN } from "../data/A01_hauptbeschwerde.js";
 import { UPLOAD_KATEGORIEN } from "../data/A00c_uploads.js";
+import { ZEITRAHMEN_OPTIONEN } from "../data/A00b_ziele.js";
+import { getZielKategorie } from "../data/A24_ziele_prom.js";
 
 /**
  * Alle Sitzungen (archivierte Akte + aktuelle Arbeits-Sitzung), dedupliziert
@@ -87,8 +89,26 @@ export function computeSummary() {
     beruf: a["SD-009"],
   };
 
-  // ── Ziele (PROM) ────────────────────────────────────────
-  const ziele = (state.meta.ziele || []).filter((z) => z.lebensbereich || z.zielText);
+  // ── Ziele (PROM, kategoriegesteuert — A24) ──────────────
+  const zeitrahmenLabel = (v) => (ZEITRAHMEN_OPTIONEN.find((o) => o.value === v) || {}).label || v;
+  const ziele = (state.meta.ziele || [])
+    .filter((z) => z.kategorie || z.aktivitaet || z.lebensbereich)
+    .map((z) => {
+      const kat = getZielKategorie(z.kategorie);
+      const messwerte = [];
+      if (z.baseline != null) messwerte.push(`Baseline ${z.baseline}/10`);
+      if (z.baseline != null && z.target != null) messwerte.push(`Ziel ${z.target}/10`);
+      if (z.zielgewicht) messwerte.push(`Zielgewicht ${z.zielgewicht} kg`);
+      return {
+        zielText: z.aktivitaet || (kat ? kat.label : "Ziel"),
+        kategorieLabel: kat ? `${kat.icon} ${kat.label}` : null,
+        // Abschluss-Kompatibilität: alte Renderer lesen lebensbereich/fokus.
+        lebensbereich: kat ? kat.label : z.lebensbereich || null,
+        fokus: messwerte.join(" · ") || null,
+        zeitrahmen: z.zeitrahmen === "zu_termin" && z.zieldatum ? `bis ${z.zieldatum}` : zeitrahmenLabel(z.zeitrahmen),
+        warum: z.warum || null,
+      };
+    });
 
   // ── Beschwerden + CDSS-Verdacht pro Beschwerde ──────────
   const cdssPerBeschwerde = computeAllActiveRegionsPerBeschwerde(a);

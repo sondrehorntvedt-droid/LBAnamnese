@@ -20,6 +20,7 @@ import { HORMON_REGELN, HORMON_RED_FLAGS } from "../data/A19_hormon_regeln.js";
 import { DARM_REGELN, DARM_RED_FLAGS } from "../data/A20_darm_regeln.js";
 import { IMMUN_REGELN } from "../data/A21_immun_regeln.js";
 import { LICHT_REGELN } from "../data/A22_licht_regeln.js";
+import { ZIEL_KATEGORIEN, ZIEL_MESSUNGEN, SCHMERZ_NRS_WENN } from "../data/A24_ziele_prom.js";
 import { INDEX } from "./anamnese-index.js";
 import { buildManifest } from "./manifest.js";
 
@@ -59,6 +60,15 @@ export function baueRegelwerk(version) {
     darm_red_flags: DARM_RED_FLAGS,
     immun_regeln: IMMUN_REGELN,
     licht_regeln: LICHT_REGELN,
+    // Ziele/PROM-Baum (A24): Kategorien + deterministische Wenn-Messungen +
+    // Bedingung für die globale Schmerz-NRS — maschinenlesbar für
+    // Therapietracking & Forschung (PSFS Stratford 1995, NRS Farrar 2001,
+    // GAS Kiresuk & Sherman 1968, ICF WHO 2001, WHO-5 Topp 2015).
+    ziele_prom: {
+      kategorien: ZIEL_KATEGORIEN,
+      messungen: ZIEL_MESSUNGEN,
+      schmerz_nrs_wenn: SCHMERZ_NRS_WENN,
+    },
     umfang,
   };
 }
