@@ -101,14 +101,52 @@ export const ZIEL_KATEGORIEN = [
     messung: "psfs",
   },
   {
+    // Ästhetik/Body-Composition — ehrliches, häufiges Motiv (gerade bei
+    // Jüngeren, aber nicht nur): definierter, mehr Muskeln, straffer,
+    // frisches Hautbild. Passt zu Training + Vitalmedizin. Messung:
+    // Körperbild-Zufriedenheit 0–10 (Baseline→Ziel; Gewicht allein wäre
+    // falsch — Muskelaufbau erhöht es). Objektivierung (Umfänge, InBody)
+    // erfolgt in der Praxis.
+    value: "aussehen_koerperform",
+    icon: "✨",
+    label: "Besser aussehen — Muskeln, Definition & Ausstrahlung",
+    hint: "z.B. definierter werden, Muskeln aufbauen, straffer & frischer aussehen, gesundes Hautbild",
+    platzhalter: "z.B. Bis zum Sommer sichtbar definierter sein und mich in meiner Haut wohlfühlen",
+    messung: "nrs_koerperbild",
+  },
+  {
+    // Muskuloskelettale Prophylaxe (Sondres Punkt): Rückfälle & Verletzungen
+    // VERMEIDEN — klinisch hochrelevant (Rückenschmerz-Rezidivraten sind
+    // hoch; Sekundärprävention ist Kernauftrag von Physio/Osteo/Training).
+    // Messung: Zuversicht/Selbstwirksamkeit 0–10 (Anlehnung an Pain
+    // Self-Efficacy, Nicholas 2007) — trackbar und veränderungssensitiv.
+    value: "schutz_vorbeugen",
+    icon: "🛡️",
+    label: "Beschwerden vorbeugen — Rückfälle & Verletzungen vermeiden",
+    hint: "z.B. der Rücken soll nicht wieder blockieren, verletzungsfrei durch die Ski-Saison, Stürzen vorbeugen",
+    platzhalter: "z.B. Nie wieder einen Hexenschuss wie im letzten Winter",
+    messung: "nrs_zuversicht",
+  },
+  {
     value: "praevention",
     icon: "🌿",
     label: "Gesund bleiben — Prävention & Longevity",
-    hint: "z.B. beweglich alt werden, Beschwerden vorbeugen",
+    hint: "z.B. systemisch gesund bleiben, Risikofaktoren senken, beweglich alt werden",
     platzhalter: "z.B. Mit 80 noch selbstständig wandern können",
     messung: "keine",
   },
 ];
+
+/*
+ * BOARD-ENTSCHEID zur Vollständigkeit (Lindebergs-Angebot: Vitalmedizin,
+ * Training, Physiotherapie, Osteopathie): Mit 11 Kategorien ist die
+ * Motiv-Landschaft abgedeckt. BEWUSST KEINE eigenen Kategorien für
+ * organbezogene Wünsche (z.B. „beschwerdefreie Verdauung") oder Kognition
+ * („mental klarer") — solche Ziele laufen über den Freitext der passenden
+ * Kategorie (Energie/Prävention) bzw. fachlich über die Beschwerden/
+ * Systemanamnese; mehr Kacheln würden die Auswahl verwässern
+ * (Kategorien-Inflation vs. „kurz und knackig").
+ */
 
 /**
  * Wenn-Struktur: Welche Baseline-/Ziel-Messung gehört zu welcher Kategorie.
@@ -146,6 +184,18 @@ export const ZIEL_MESSUNGEN = {
     baselineFrage: "Wie angespannt fühlen Sie sich derzeit? (0 = völlig entspannt, 10 = maximal angespannt)",
     zielFrage: "Welches Anspannungsniveau wäre Ihr Ziel?",
     labels: { 0: "Völlig entspannt", 10: "Maximal angespannt" },
+  },
+  nrs_koerperbild: {
+    typ: "nrs",
+    baselineFrage: "Wie zufrieden sind Sie HEUTE mit Ihrem Körper und Ihrer Ausstrahlung? (0 = gar nicht, 10 = voll und ganz)",
+    zielFrage: "Welche Zufriedenheit möchten Sie erreichen?",
+    labels: { 0: "Gar nicht zufrieden", 10: "Voll und ganz" },
+  },
+  nrs_zuversicht: {
+    typ: "nrs",
+    baselineFrage: "Wie sicher fühlen Sie sich HEUTE, Alltag und Sport ohne Rückfall oder Verletzung zu meistern? (0 = gar nicht sicher, 10 = völlig sicher)",
+    zielFrage: "Wie sicher möchten Sie sich fühlen?",
+    labels: { 0: "Gar nicht sicher", 10: "Völlig sicher" },
   },
   keine: { typ: "keine" },
 };
