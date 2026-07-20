@@ -11,6 +11,12 @@ import {
   DARM_GATE,
 } from "../../data/A03_daniel_vitalmedizin.js";
 import { LICHT_GATE, LICHT_FRAGEN } from "../../data/A22_licht_circadian.js";
+import { ERNAEHRUNG_KERN_FRAGEN } from "../../data/A11_ernaehrung.js";
+
+// ERN-020 (Tageslicht/Sonne auf der Haut) gehört fachlich zu Licht & Rhythmus
+// — aus dem Ernährungs-Schritt hierher umgezogen (ID bleibt stabil, speist
+// weiter die Vitamin-D-Regel in A17).
+const SONNE_FRAGE = ERNAEHRUNG_KERN_FRAGEN.find((f) => f.id === "ERN-020");
 import { FAKTOREN_WOVEN_FRAGEN } from "../faktoren-mapping.js";
 import { state } from "../state.js";
 import { hinterGate } from "../conditions.js";
@@ -34,9 +40,13 @@ const HORMON_STOFFWECHSEL = [...METAB_SCREEN, ...HORMONSTATUS_FRAGEN];
 // eigenen Ernährungs-Modul, Diabetes/Blutdruck/Blutfette in der Vorgeschichte.
 const CORE_SECTIONS = [
   { titel: "Schlaf & Energie", felder: SCHLAF_ENERGIE_FRAGEN },
+  // Licht & Rhythmus direkt beim Schlaf (circadianes Paar) — ab Ganzheitlich,
+  // gate-gesteuert (bei „Nein" nur eine Frage). Enthält jetzt auch die
+  // Sonnen-/Tageslicht-Frage ERN-020, die früher unter Ernährung stand.
+  { titel: "Licht & Rhythmus", felder: [LICHT_GATE, ...hinterGate("LICHT-GATE", [...LICHT_FRAGEN, ...(SONNE_FRAGE ? [SONNE_FRAGE] : [])])] },
   { titel: "Beweglichkeit, Verbindung & Sinn", felder: FAKTOREN_WOVEN_FRAGEN },
 ];
-// Alle drei Tiefenanalyse-Sektionen sind gate-gesteuert: erst „Ja" öffnet die
+// Tiefenanalyse-Sektionen sind gate-gesteuert: erst „Ja" öffnet die
 // Detailfragen (Zeitersparnis, wenn der Bereich kein Thema ist). Die Listen
 // sind flach (keine eigenen Zwischenüberschriften), daher genügt hier das
 // feld-weise hinterGate() — kein Block-Wrapper nötig.
@@ -44,14 +54,13 @@ const DEEP_SECTIONS = [
   { titel: "Darmgesundheit & Mikrobiom", felder: [DARM_GATE, ...hinterGate("DARM-GATE", DARMGESUNDHEIT_FRAGEN)] },
   { titel: "Hormone & Stoffwechsel", felder: [HORMON_GATE, ...hinterGate("HOR-GATE", HORMON_STOFFWECHSEL)] },
   { titel: "Immunsystem & Entzündung", felder: [IMMUN_GATE, ...hinterGate("IMM-GATE", IMMUN_FRAGEN)] },
-  { titel: "Licht & Rhythmus", felder: [LICHT_GATE, ...hinterGate("LICHT-GATE", LICHT_FRAGEN)] },
 ];
 
 export function registerVitalmedizinStep() {
   registerStep({
     id: "vitalmedizin",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Energie & Vitalität",
     eyebrow: "Vitalmedizin",
     title: "Energie, Schlaf & Vitalität",

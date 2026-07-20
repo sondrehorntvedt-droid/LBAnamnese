@@ -44,7 +44,7 @@ export function registerSportStep() {
   registerStep({
     id: "sport_bewegung",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Sport & Bewegung",
     eyebrow: "Sport & Bewegung",
     title: "Ihre Bewegung & Leistungsfähigkeit",

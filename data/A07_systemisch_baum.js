@@ -310,15 +310,21 @@ export const SYSTEMISCHE_BAUM = {
 
   PROSTATA: {
     id: "PROSTATA",
-    name: "Prostata",
+    name: "Prostata & Männergesundheit",
     gruppe: "Urogenital männlich",
-    icd10: ["N40", "N41", "C61"],
+    icd10: ["N40", "N41", "C61", "N48.4"],
     cdss_modul: "S04_hno_urogenital_gynaekologie",
     screening: [
       { id: "PRO-001", frage: "Blasenentleerungsstörungen (schwacher Strahl, Zögern, Tröpfeln)?", type: "yes_no" },
       { id: "PRO-002", frage: "Schmerzen im Damm, Hoden oder unteren Rücken?", type: "yes_no" },
       { id: "PRO-003", frage: "Bekannter erhöhter PSA-Wert?", type: "yes_no" },
-      { id: "PRO-004", frage: "Alter und letzter PSA-Test?", type: "textarea" }
+      { id: "PRO-004", frage: "Alter und letzter PSA-Test?", type: "textarea" },
+      // Männer-Sexualanamnese (analog PDF-Abschnitt 10f): klinisch wichtig —
+      // Erektionsstörungen sind ein früher GEFÄSS-Marker (endotheliale
+      // Dysfunktion; Vlachopoulos 2013) und Hinweis auf Testosteronmangel.
+      { id: "PRO-005", frage: "Haben Sie Erektionsprobleme?", type: "yes_no" },
+      { id: "PRO-006", frage: "Ist Ihre Libido (sexuelles Verlangen) deutlich vermindert?", type: "yes_no" },
+      { id: "PRO-007", frage: "Schmerzen beim Geschlechtsverkehr oder beim Samenerguss?", type: "yes_no" }
     ],
     verzweigung: [
       { bedingung: { feld: "alter", op: ">=", wert: 50 }, cdss_gewicht: { bph: +3 },

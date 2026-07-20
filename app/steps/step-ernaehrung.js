@@ -42,7 +42,7 @@ export function registerErnaehrungStep() {
   registerStep({
     id: "ernaehrung",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Ernährung",
     eyebrow: "Ernährung & Trinken",
     title: "Ernährung & Trinkverhalten",
@@ -52,7 +52,9 @@ export function registerErnaehrungStep() {
     render(container) {
       // Kern immer; der Vertiefungsblock (Tiefenanalyse) hängt hinter einem
       // Bereichs-Gate und klappt bei „Nein" komplett zu (samt Unterüberschriften).
-      const cleanups = [renderSectioned(container, ERNAEHRUNG_KERN_FRAGEN)];
+      // ERN-020 (Tageslicht/Sonne) wird fachlich im Bereich „Licht & Rhythmus"
+      // (Vitalmedizin) erhoben — hier ausblenden, ID bleibt stabil.
+      const cleanups = [renderSectioned(container, ERNAEHRUNG_KERN_FRAGEN.filter((f) => f.id !== "ERN-020"))];
       if (state.meta.anamneseTiefe === "tiefenanalyse") {
         cleanups.push(
           renderGatedBlock(container, ERN_GATE, (wrap) =>

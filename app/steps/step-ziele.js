@@ -50,12 +50,25 @@ function renderZielCard(z, index) {
   const stack = el("div", "field-stack");
   stack.style.marginTop = "12px";
 
-  // Aktivität (PSFS, patientengeneriert)
+  // Logischer Trichter (UX-Review Sondre): erst der LEBENSBEREICH (wo liegt
+  // das Ziel?), dann die konkrete Tätigkeit, dann die Messung. Die
+  // PSFS-/NRS-Validität bleibt unberührt — nur die Erhebungs-Reihenfolge
+  // ändert sich, nicht die Instrumente (Forschungs-/Tracking-Basis).
+
+  // 1) Lebensbereich
+  stack.appendChild(
+    renderQuestion(
+      { id: "lebensbereich", frage: "In welchem Lebensbereich liegt dieses Ziel?", type: "single_choice", options: LEBENSBEREICH_OPTIONEN.map((o) => ({ value: o.value, label: `${o.icon} ${o.label}` })) },
+      { getValue: () => z.lebensbereich, setValue: (_, v) => updateZiel(z.id, { lebensbereich: v }) }
+    )
+  );
+
+  // 2) Aktivität (PSFS, patientengeneriert)
   stack.appendChild(
     renderQuestion(
       {
         id: "aktivitaet",
-        frage: "Welche konkrete Tätigkeit möchten Sie (wieder) können?",
+        frage: "Und dort konkret: Welche Tätigkeit möchten Sie (wieder) können?",
         type: "textarea",
         placeholder: "z.B. Die 25 Treppenstufen bis in mein Schlafzimmer steigen — oder mit meinen Enkeln Fußball spielen",
         hint: "Je konkreter, desto besser können wir Ihren Fortschritt messen.",
@@ -64,7 +77,7 @@ function renderZielCard(z, index) {
     )
   );
 
-  // Baseline (PSFS 0–10)
+  // 3) Baseline (PSFS 0–10)
   stack.appendChild(
     renderQuestion(
       { id: "baseline", frage: PSFS_ANKER.frage, type: "vas_scale", min: PSFS_ANKER.min, max: PSFS_ANKER.max, labels: PSFS_ANKER.labels },
@@ -72,7 +85,7 @@ function renderZielCard(z, index) {
     )
   );
 
-  // Zielwert (target)
+  // 4) Zielwert (target)
   stack.appendChild(
     renderQuestion(
       {
@@ -84,14 +97,6 @@ function renderZielCard(z, index) {
         labels: { 0: "Wie jetzt", 10: "Uneingeschränkt" },
       },
       { getValue: () => z.target, setValue: (_, v) => updateZiel(z.id, { target: v }) }
-    )
-  );
-
-  // Lebensbereich
-  stack.appendChild(
-    renderQuestion(
-      { id: "lebensbereich", frage: "Welcher Lebensbereich?", type: "single_choice", options: LEBENSBEREICH_OPTIONEN.map((o) => ({ value: o.value, label: `${o.icon} ${o.label}` })) },
-      { getValue: () => z.lebensbereich, setValue: (_, v) => updateZiel(z.id, { lebensbereich: v }) }
     )
   );
 
@@ -127,7 +132,7 @@ export function registerZieleStep() {
   registerStep({
     id: "ziele",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Ihre Ziele",
     eyebrow: "Ihre Ziele",
     title: ZIELE_INTRO.titel,

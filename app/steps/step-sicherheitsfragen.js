@@ -36,7 +36,7 @@ export function registerSicherheitsfragenStep() {
   registerStep({
     id: "sicherheitsfragen",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     eyebrow: "Sicherheitsfragen",
     title: "Nur ein paar wichtige Kontrollfragen",
     subtitle:

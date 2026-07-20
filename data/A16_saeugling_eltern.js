@@ -23,9 +23,20 @@
 export const PATIENT_TYP_INTRO = {
   titel: "Für wen ist diese Anamnese?",
   beschreibung:
-    "Eltern können die Anamnese stellvertretend für ihr Baby oder Kleinkind ausfüllen — die Fragen passen sich dann komplett an.",
+    "Die Fragen passen sich komplett an: Erwachsene und Jugendliche (ab 12) füllen selbst aus, für Kinder (2–11) und Babys (0–24 Monate) füllen die Eltern aus — bei Kindern gern gemeinsam mit dem Kind.",
 };
 
+// Altersgruppen-Weiche (Advisory-Board-Entscheid, Kinderosteopathie OST-PÄD):
+//  - 0–24 Monate: Säuglings-/Kleinkind-Fremdanamnese (A16 — Geburt, Stillen,
+//    Meilensteine des 1.–2. Lebensjahres; für Ältere passt dieser Bogen
+//    inhaltlich nicht mehr, daher KEINE Ausweitung auf 3–4 Jahre).
+//  - 2–11 Jahre: eigener Kinder-Bogen (A23) — Eltern füllen aus, ab dem
+//    Schulalter idealerweise GEMEINSAM mit dem Kind.
+//  - 12–17 Jahre: füllt selbst die Erwachsenen-Anamnese aus; rechtlich ist
+//    bis zur Volljährigkeit die Einwilligung der Sorgeberechtigten in die
+//    Behandlung erforderlich (Einwilligungsfähigkeit individuell ab ~14–16 —
+//    wir holen das Einverständnis konservativ immer ein).
+//  - ab 18: Erwachsenen-Anamnese.
 export const PATIENT_TYP_FRAGEN = [
   {
     id: "PT-001",
@@ -33,7 +44,9 @@ export const PATIENT_TYP_FRAGEN = [
     type: "single_choice",
     required: true,
     options: [
-      { value: "erwachsener", label: "Mich selbst (Erwachsene/r oder Jugendliche/r)" },
+      { value: "erwachsener", label: "Mich selbst — Erwachsene/r (ab 18 Jahren)" },
+      { value: "jugendlicher", label: "Mich selbst — Jugendliche/r (12–17 Jahre)" },
+      { value: "kind", label: "Mein Kind (2–11 Jahre) — ich fülle als Elternteil aus, gern gemeinsam mit dem Kind" },
       { value: "saeugling", label: "Mein Baby / Kleinkind (0–24 Monate) — ich fülle als Elternteil aus" },
     ],
   },
@@ -42,10 +55,11 @@ export const PATIENT_TYP_FRAGEN = [
     frage: "Wer füllt den Fragebogen aus?",
     type: "single_choice",
     required: true,
-    condition: { field: "PT-001", equals: "saeugling" },
+    condition: { any: [{ field: "PT-001", equals: "saeugling" }, { field: "PT-001", equals: "kind" }] },
     options: [
       { value: "mutter", label: "Mutter" },
       { value: "vater", label: "Vater" },
+      { value: "gemeinsam", label: "Elternteil gemeinsam mit dem Kind" },
       { value: "andere", label: "Andere Bezugsperson" },
     ],
   },
@@ -54,7 +68,25 @@ export const PATIENT_TYP_FRAGEN = [
     frage: "Wichtiger Hinweis: Bitte tragen Sie im Bereich 'Persönliches' die Daten Ihres KINDES ein (Name, Geburtsdatum, Geschlecht). Ihre eigenen Kontaktdaten (Telefon, E-Mail) bleiben dort richtig. Haben Sie das erledigt?",
     type: "yes_no",
     required: false,
-    condition: { field: "PT-001", equals: "saeugling" },
+    condition: { any: [{ field: "PT-001", equals: "saeugling" }, { field: "PT-001", equals: "kind" }] },
+  },
+  // Jugendliche (12–17): Fragebogen selbst ausfüllen ist ausdrücklich
+  // erwünscht — die Einwilligung der Sorgeberechtigten in die Behandlung
+  // holen wir immer ein (konservativer rechtlicher Standard bis 18).
+  {
+    id: "PT-004",
+    frage: "Liegt das Einverständnis eines/einer Sorgeberechtigten vor, dass Sie diese Anamnese ausfüllen und bei uns behandelt werden?",
+    type: "yes_no",
+    required: true,
+    condition: { field: "PT-001", equals: "jugendlicher" },
+    hint: "Bis zur Volljährigkeit entscheiden Sorgeberechtigte über die Behandlung mit. Beim ersten Termin bestätigt ein Elternteil das Einverständnis schriftlich.",
+  },
+  {
+    id: "PT-005",
+    frage: "Name des/der Sorgeberechtigten (für die Einverständnis-Bestätigung beim Termin)",
+    type: "text",
+    required: false,
+    condition: { field: "PT-001", equals: "jugendlicher" },
   },
 ];
 

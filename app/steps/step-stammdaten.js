@@ -24,11 +24,16 @@ export function registerStammdatenStep() {
         bmiCard.innerHTML = "";
         const label = document.createElement("div");
         label.className = "section-label";
-        label.textContent = "Ihr BMI";
+        label.textContent = "Ihr BMI — wird automatisch berechnet";
         const value = document.createElement("p");
         value.className = "tagline";
         value.style.margin = "8px 0 0";
-        value.textContent = bmi ? `${bmi} — ${kat.kat}` : "Bitte Gewicht & Größe eingeben";
+        // Keine erneute Eingabe: rechnet live aus Gewicht (SD-007) und
+        // Größe (SD-008) weiter oben — der Text darf nicht wie eine
+        // zusätzliche Frage klingen.
+        value.textContent = bmi
+          ? `${bmi} — ${kat.kat}`
+          : "… erscheint hier, sobald Gewicht und Größe oben ausgefüllt sind.";
         bmiCard.appendChild(label);
         bmiCard.appendChild(value);
       }

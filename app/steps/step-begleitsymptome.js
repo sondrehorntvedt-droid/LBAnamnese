@@ -6,7 +6,7 @@ export function registerBegleitsymptomeStep() {
   registerStep({
     id: "begleitsymptome",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Begleitsymptome",
     eyebrow: "Begleitsymptome",
     title: BEGLEITSYMPTOME_INTRO.titel,

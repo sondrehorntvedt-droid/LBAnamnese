@@ -12,7 +12,7 @@
 export const VITALPARAMETER_INTRO = {
   titel: "Ihre Vitalwerte",
   beschreibung:
-    "Falls Sie aktuelle Messwerte kennen (von zu Hause, aus der Apotheke oder von einem Wearable), tragen Sie sie hier ein — alles freiwillig. Später lassen sich diese Werte direkt aus Ihren Geräten übernehmen.",
+    "Nur falls bekannt: Wenn Sie aktuelle Messwerte haben (von zu Hause, aus der Apotheke oder von einem Wearable), tragen Sie sie gern ein — alles freiwillig. Kein Problem, wenn nicht: Alles Fehlende messen wir bei Ihrem Termin vor Ort.",
 };
 
 export const VITALPARAMETER_FRAGEN = [

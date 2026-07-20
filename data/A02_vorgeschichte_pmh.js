@@ -31,6 +31,45 @@ export const VORGESCHICHTE_FRAGEN = [
     allow_sonstiges: true
   },
 
+  // Sofort-Follow-ups (Board-/UX-Entscheid): EIN kurzes strukturiertes
+  // Nachfassen direkt beim Ankreuzen — ohne Kontextwechsel. Die fachliche
+  // Tiefe (Symptome, Verlauf) bleibt in der Systemanamnese.
+  {
+    id: "PMH-001-DM",
+    frage: "Welcher Diabetes-Typ?",
+    type: "single_choice",
+    required: false,
+    condition: { field: "PMH-001", contains: "diabetes" },
+    options: [
+      { value: "typ1", label: "Typ 1" },
+      { value: "typ2", label: "Typ 2" },
+      { value: "schwanger", label: "Schwangerschaftsdiabetes (aktuell/früher)" },
+      { value: "unklar", label: "Weiß ich nicht genau" },
+    ],
+  },
+  {
+    id: "PMH-001-DM-INSULIN",
+    frage: "Spritzen Sie Insulin?",
+    type: "yes_no",
+    required: false,
+    condition: { field: "PMH-001", contains: "diabetes" },
+  },
+  {
+    id: "PMH-001-HERZ",
+    frage: "Welche Herzerkrankung? (Mehrfachauswahl möglich)",
+    type: "multiple_choice",
+    required: false,
+    condition: { field: "PMH-001", contains: "herzerkrankung" },
+    options: [
+      { value: "khk", label: "Koronare Herzkrankheit / Stent / Bypass" },
+      { value: "infarkt", label: "Herzinfarkt (durchgemacht)" },
+      { value: "rhythmus", label: "Herzrhythmusstörung (z.B. Vorhofflimmern)" },
+      { value: "klappe", label: "Herzklappen-Erkrankung / -OP" },
+      { value: "insuffizienz", label: "Herzschwäche (Herzinsuffizienz)" },
+      { value: "andere_unklar", label: "Andere / weiß ich nicht genau" },
+    ],
+  },
+
   {
     id: "PMH-002",
     frage: "Falls Sie weitere Erkrankungen haben, die oben nicht aufgeführt sind:",

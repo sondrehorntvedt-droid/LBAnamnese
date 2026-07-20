@@ -12,6 +12,7 @@ import { registerStammdatenStep } from "./step-stammdaten.js";
 import { registerTiefeStep } from "./step-tiefe.js";
 import { registerPatientTypStep } from "./step-patient-typ.js";
 import { registerSaeuglingStep } from "./step-saeugling.js";
+import { registerKindStep } from "./step-kind.js";
 import { registerZieleStep } from "./step-ziele.js";
 import { registerUploadStep } from "./step-uploads.js";
 import { registerBeschwerdeLoopStep } from "./step-beschwerde-loop.js";
@@ -33,9 +34,10 @@ import { registerDarmRedFlags } from "../darm.js";
 registerWelcomeStep();
 registerStammdatenStep();
 registerTiefeStep();
-// Weiche Erwachsener/Säugling — direkt nach der Tiefe-Wahl (Praxis-Wunsch).
+// Altersgruppen-Weiche (Erwachsen/Jugend/Kind/Baby) — direkt nach der Tiefe-Wahl.
 registerPatientTypStep();
 registerSaeuglingStep();
+registerKindStep();
 registerZieleStep();
 registerUploadStep();
 registerBeschwerdeLoopStep();

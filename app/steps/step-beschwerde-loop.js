@@ -261,12 +261,12 @@ export function registerBeschwerdeLoopStep() {
   registerStep({
     id: "beschwerde_loop",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Ihre Beschwerden",
     eyebrow: "Ihre Beschwerden",
     title: "Was führt Sie zu uns?",
     subtitle:
-      "Viele Patienten haben mehrere Anliegen gleichzeitig — damit nichts vermischt wird, gehen wir sie nacheinander durch.",
+      "Viele Patienten haben mehrere Anliegen gleichzeitig. Beginnen Sie bitte mit Ihrem WICHTIGSTEN Anliegen (Priorität 1) — danach können Sie Schritt für Schritt Priorität 2, 3 … ergänzen. So geht nichts durcheinander.",
     estMinutes: 12,
     render(container) {
       ensureFirstBeschwerde();
@@ -286,8 +286,8 @@ export function registerBeschwerdeLoopStep() {
         const last = beschwerden[beschwerden.length - 1];
         if (last && last.region) {
           const loopControl = el("div", "card card--sunken");
-          loopControl.appendChild(el("p", "field-label", "Möchten Sie eine weitere Beschwerde hinzufügen?"));
-          const addBtn = el("button", "btn btn--primary", "+ Weitere Beschwerde erfassen");
+          loopControl.appendChild(el("p", "field-label", "Gibt es ein weiteres Anliegen? Dann erfassen Sie jetzt das nächst-wichtigste (Priorität 2, dann 3 …)."));
+          const addBtn = el("button", "btn btn--primary", "+ Nächste Beschwerde erfassen");
           addBtn.type = "button";
           addBtn.addEventListener("click", () => addBeschwerde());
           loopControl.appendChild(addBtn);

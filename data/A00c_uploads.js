@@ -16,7 +16,7 @@
 export const UPLOAD_INTRO = {
   titel: "Haben Sie bereits Befunde? Laden Sie sie zuerst hoch.",
   beschreibung:
-    "Je mehr Unterlagen Sie hochladen, desto weniger müssen Sie selbst eintippen. Ordnen Sie jeden Befund seiner Fachrichtung zu — so bleibt Ihre Akte strukturiert und für jeden Behandler sofort lesbar.",
+    "Je mehr Unterlagen Sie hochladen, desto weniger müssen Sie selbst eintippen. Ordnen Sie jeden Befund seiner Fachrichtung zu, wenn Sie mögen — und wenn Sie nicht sicher sind, wohin etwas gehört: einfach unter „Sonstiges“ hochladen, wir ordnen es für Sie zu.",
 };
 
 export const UPLOAD_KATEGORIEN = [
@@ -99,5 +99,16 @@ export const UPLOAD_KATEGORIEN = [
     icon: "💊",
     hint: "Aktuelle Medikamente, Dosierungen",
     deckt_felder: ["PMH-007", "PMH-008"],
+  },
+  {
+    // Auffang-Kategorie: Patienten müssen NICHT wissen, wohin etwas gehört.
+    // Alles hier Abgelegte wird von der Praxis (später KI-gestützt) den
+    // richtigen Fachbereichen zugeordnet.
+    id: "UP-sonstiges",
+    fachbereich: "Sonstiges",
+    label: "Sonstiges / Ich bin nicht sicher",
+    icon: "📎",
+    hint: "Eigene Aufzeichnungen (z.B. Schmerz-Tagebuch), 4D-/Haltungs-Scan, Ernährungsplan, Wearable-/Fitness-Daten, alte Berichte — wir ordnen es für Sie zu",
+    deckt_felder: [],
   },
 ];

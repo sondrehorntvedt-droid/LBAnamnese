@@ -19,7 +19,7 @@ export function registerVorgeschichteStep() {
   registerStep({
     id: "vorgeschichte",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     eyebrow: "Schritt 3 · Krankengeschichte",
     title: "Ihre medizinische Vorgeschichte",
     subtitle: "Vorerkrankungen, Operationen, Medikamente, Allergien, Familie.",

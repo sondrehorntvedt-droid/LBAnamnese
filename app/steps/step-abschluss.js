@@ -303,9 +303,12 @@ function renderVollstaendig(container, s, therapistMode) {
   ["SD-001", "SD-002", "SD-003"].forEach((id) => consumed.add(id)); // im Kopf enthalten
   zeigeAlle(kopf, idsInGruppe("Stammdaten"));
   zeige(kopf, "PT-002", "Ausgefüllt von");
+  zeige(kopf, "PT-004", "Einverständnis Sorgeberechtigte (Jugendliche/r)");
+  zeige(kopf, "PT-005", "Sorgeberechtigte/r");
   container.appendChild(kopf);
 
-  const saeugling = a["PT-001"] === "saeugling";
+  // Fremdanamnese = Eltern füllen für Baby (A16) oder Kind 2–11 (A23) aus.
+  const saeugling = a["PT-001"] === "saeugling" || a["PT-001"] === "kind";
   let nr = 0;
 
   if (!saeugling) {
@@ -447,7 +450,7 @@ function renderVollstaendig(container, s, therapistMode) {
 
     // ── 04 · VORERKRANKUNGEN ──
     const vor = sektionNr(container, ++nr, "Vorerkrankungen");
-    const n04 = zeigeAlle(vor, ["PMH-001", "PMH-002", "PMH-001b", "PMH-CA-01", "PMH-CA-02", "PMH-CA-03", "PMH-CA-04", "PMH-CA-05", "PMH-CA-06", "PMH-CA-07"]);
+    const n04 = zeigeAlle(vor, ["PMH-001", "PMH-001-DM", "PMH-001-DM-INSULIN", "PMH-001-HERZ", "PMH-002", "PMH-001b", "PMH-CA-01", "PMH-CA-02", "PMH-CA-03", "PMH-CA-04", "PMH-CA-05", "PMH-CA-06", "PMH-CA-07"]);
     if (!n04) vor.appendChild(el("p", null, "Keine bekannten Vorerkrankungen angegeben."));
 
     // ── 06 · OPERATIONEN, TRAUMEN & UNFÄLLE (tabellarisch) ──
@@ -572,7 +575,8 @@ function renderVollstaendig(container, s, therapistMode) {
 
     // ── 11 · TRINKVERHALTEN & ERNÄHRUNG ──
     const ern = sektionNr(container, ++nr, "Trinkverhalten & Ernährung");
-    const n11 = zeigeAlle(ern, idsInGruppe("Ernährung & Trinken"));
+    // ERN-020 (Sonne/Tageslicht) erscheint fachlich im Abschnitt Licht & Rhythmus.
+    const n11 = zeigeAlle(ern, idsInGruppe("Ernährung & Trinken").filter((id) => id !== "ERN-020"));
     if (!n11) ern.appendChild(el("p", "field-hint", "Nicht erhoben."));
 
     // ── 12 · SPORT & BEWEGUNG ──
@@ -608,7 +612,7 @@ function renderVollstaendig(container, s, therapistMode) {
 
     // ── 15 · LICHT & RHYTHMUS ── (direkt hinter dem Schlaf — circadianes
     // Paar; Ausrichtung Reiter/Panda: Licht ist der stärkste Schlaf-Hebel.)
-    vertiefungsAbschnitt("Licht & Rhythmus", idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "LICHT-GATE");
+    vertiefungsAbschnitt("Licht & Rhythmus", [...idsInGruppe("Vitalmedizin — Licht & Rhythmus"), "ERN-020"], "LICHT-GATE");
 
     // ── 16 · SOZIALANAMNESE & PSYCHE ──
     const soz = sektionNr(container, ++nr, "Sozialanamnese & Psyche");
@@ -668,7 +672,7 @@ function renderVollstaendig(container, s, therapistMode) {
     Object.keys(INDEX).forEach((id) => {
       if (consumed.has(id) || id.startsWith("PHQ4-")) return;
       const grp = INDEX[id].group || "Weitere";
-      if (grp === "Beschwerde" || grp === "Für wen?" || grp.startsWith("Säugling: ")) return;
+      if (grp === "Beschwerde" || grp === "Für wen?" || grp.startsWith("Säugling: ") || grp.startsWith("Kind: ")) return;
       if (!(id in a)) return;
       if (formatAntwort(id, a[id]) == null) return;
       if (!restGruppen.has(grp)) restGruppen.set(grp, []);
@@ -682,16 +686,16 @@ function renderVollstaendig(container, s, therapistMode) {
       });
     }
   } else {
-    // ── Säuglings-Anamnese: Abschnitte des Eltern-Fragebogens, nummeriert ──
+    // ── Eltern-Fragebogen (Säugling A16 / Kind A23): Abschnitte nummeriert ──
     const sglGruppen = [];
     Object.keys(INDEX).forEach((id) => {
       const grp = INDEX[id].group || "";
-      if (grp.startsWith("Säugling: ") && !sglGruppen.includes(grp)) sglGruppen.push(grp);
+      if ((grp.startsWith("Säugling: ") || grp.startsWith("Kind: ")) && !sglGruppen.includes(grp)) sglGruppen.push(grp);
     });
     sglGruppen.forEach((grp) => {
       const ids = idsInGruppe(grp).filter((id) => id in a && formatAntwort(id, a[id]) != null);
       if (!ids.length) return;
-      const card = sektionNr(container, ++nr, grp.replace("Säugling: ", ""));
+      const card = sektionNr(container, ++nr, grp.replace(/^(Säugling|Kind): /, ""));
       ids.forEach((id) => zeige(card, id));
     });
     if (therapistMode && s.therapist.redFlags.length) {
@@ -872,86 +876,105 @@ function banner(text, farbe, icon) {
   return b;
 }
 
-// ── Reiter 2: Kompakt — Fließtext-Zusammenfassung (½–1 A4) ─────────────────
-// Reiner, gut lesbarer Text statt Dashboard (Wunsch Sondre 20.07.2026):
-// kurze, deterministisch aus den Antworten gebaute Absätze — als portable
-// Patientenakte les- und druckbar. Keine Bewertung, nur Formatierung.
+// ── Reiter 2: Kompakt — Arztbericht (½–1 A4) ───────────────────────────────
+// Klassischer Vorstellungsbericht im Arztbrief-Stil (Wunsch Sondre): „Frau
+// Mustermann stellt sich am … in unserer Praxis vor mit …" — komprimierter
+// Fließtext für externe Ärzte und unsere Therapeuten, in wenigen Minuten das
+// Vollbild. Deterministisch aus den Antworten gebaut, keine Bewertung.
 function renderKompakt(container, s, therapistMode) {
   const a = state.answers;
   const fmt = (id, nsId) => {
     const key = nsId ? `${nsId}::${id}` : id;
     return key in a ? formatAntwort(id, a[key]) : null;
   };
-  const absatz = (label, text) => {
+  const absatz = (text) => {
+    if (!text) return;
+    const p = el("p");
+    p.style.margin = "0 0 12px";
+    p.style.lineHeight = "1.65";
+    p.textContent = text;
+    container.appendChild(p);
+  };
+  const markiert = (label, text, farbe) => {
     if (!text) return;
     const p = el("p");
     p.style.margin = "0 0 10px";
     p.style.lineHeight = "1.6";
+    if (farbe) p.style.color = farbe;
     p.appendChild(el("strong", null, label + ": "));
     p.appendChild(document.createTextNode(text));
     container.appendChild(p);
   };
 
   container.appendChild(
-    el("p", "field-hint", "Kurzfassung als Fließtext — portable Patientenakte. Oben Druck-Knopf zum Speichern/Drucken.")
+    el("p", "field-hint", "Kompaktbericht im Arztbrief-Stil — für Behandler und externe Ärzte. Oben Druck-Knopf zum Speichern/Drucken.")
   );
 
-  // Kopf: Name + Kennzahlen in einer Zeile
+  // Kopfzeile
+  const anrede = s.grunddaten.geschlecht === "m" ? "Herr " : s.grunddaten.geschlecht === "f" ? "Frau " : "";
   const name = [s.grunddaten.vorname, s.grunddaten.nachname].filter(Boolean).join(" ") || "Patient:in";
-  const kopfMeta = [];
-  if (s.grunddaten.alter != null) kopfMeta.push(`${s.grunddaten.alter} J.`);
-  if (s.grunddaten.geschlecht) kopfMeta.push(s.grunddaten.geschlecht === "m" ? "männlich" : s.grunddaten.geschlecht === "f" ? "weiblich" : s.grunddaten.geschlecht);
-  if (s.grunddaten.bmi) kopfMeta.push(`BMI ${s.grunddaten.bmi}`);
-  if (s.vitalwerte) kopfMeta.push(s.vitalwerte);
-  if (s.sitzungDatum) kopfMeta.push("Anamnese vom " + formatDatum(s.sitzungDatum));
   const kopf = el("div");
-  kopf.style.marginBottom = "14px";
-  const nameEl = el("div", null, name);
-  nameEl.style.fontSize = "1.25rem";
+  kopf.style.marginBottom = "12px";
+  const nameEl = el("div", null, `${anrede}${name}`);
+  nameEl.style.fontSize = "1.2rem";
   nameEl.style.fontWeight = "var(--weight-semibold)";
   kopf.appendChild(nameEl);
+  const kopfMeta = [];
+  if (s.grunddaten.alter != null) kopfMeta.push(`${s.grunddaten.alter} Jahre`);
+  if (s.grunddaten.bmi) kopfMeta.push(`BMI ${s.grunddaten.bmi}`);
+  if (s.vitalwerte) kopfMeta.push(s.vitalwerte);
   if (kopfMeta.length) kopf.appendChild(el("p", "field-hint", kopfMeta.join(" · ")));
   container.appendChild(kopf);
 
-  // Sicherheit zuerst — dann günstige Zeichen
+  // Sicherheitszeilen zuerst (Arztbrief-Konvention: Wichtiges nach oben)
   if (therapistMode && s.therapist.redFlags.length)
-    absatz("⚠️ Red Flags", s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "));
-  if (s.warnzeichen && s.warnzeichen.length) absatz("⚠ Warnzeichen", s.warnzeichen.join(", "));
-  const green = computeGreenFlags(a, s, safetyStatus(a));
-  if (green.length) absatz("🟢 Green Flags", green.join(" · "));
+    markiert("⚠️ Red Flags", s.therapist.redFlags.map((r) => r.name || r.flag_id).join(", "), "var(--color-status-red)");
+  if (s.warnzeichen && s.warnzeichen.length)
+    markiert("⚠ Warnzeichen", s.warnzeichen.join(", "), "var(--color-status-yellow)");
 
-  // Beschwerden als je ein lesbarer Satz
+  // 1) Vorstellungssatz mit Beschwerden
+  const datum = s.sitzungDatum ? formatDatum(s.sitzungDatum) : formatDatum(new Date().toISOString().slice(0, 10));
   const beschTexte = s.beschwerden.map((b) => {
-    const teile = [];
-    if (fmt("HB-004", b.id)) teile.push(`Ø ${fmt("HB-004", b.id)}/10`);
-    if (fmt("HB-007", b.id)) teile.push(`Beginn: ${fmt("HB-007", b.id)}`);
-    if (fmt("HB-008", b.id)) teile.push(`Verlauf: ${fmt("HB-008", b.id)}`);
-    if (fmt("HB-011", b.id)) teile.push(`besser durch ${fmt("HB-011", b.id)}`);
-    if (fmt("HB-012", b.id)) teile.push(`schlechter durch ${fmt("HB-012", b.id)}`);
-    const prio = b.prioritaet ? `[${b.prioritaet.kurz}] ` : "";
+    const details = [];
     const anliegen = fmt("HB-001", b.id);
-    const kern = teile.length ? ` (${teile.join("; ")})` : "";
-    const dx = therapistMode && b.verdacht.length ? ` → V.a. ${diagnoseLabel(b.verdacht[0].label)}` : "";
-    return `${prio}${b.region}${anliegen ? ` — „${anliegen}“` : ""}${kern}${dx}`;
+    if (anliegen) details.push(`„${anliegen}“`);
+    if (fmt("HB-004", b.id)) details.push(`NRS ${fmt("HB-004", b.id)}/10`);
+    if (fmt("HB-007", b.id)) details.push(`seit ${fmt("HB-007", b.id)}`);
+    const prio = b.prioritaet ? ` (${b.prioritaet.kurz})` : "";
+    const dx = therapistMode && b.verdacht.length ? `; V.a. ${diagnoseLabel(b.verdacht[0].label)}` : "";
+    return `${b.region}${prio}${details.length ? " — " + details.join(", ") : ""}${dx}`;
   });
-  if (beschTexte.length) absatz("Beschwerden", beschTexte.join(" · "));
+  absatz(
+    beschTexte.length
+      ? `${anrede}${name} stellt sich am ${datum} in unserer Praxis vor mit: ${beschTexte.join("; ")}.`
+      : `${anrede}${name} stellt sich am ${datum} zur ganzheitlichen Analyse in unserer Praxis vor.`
+  );
 
-  // Vorgeschichte kompakt in einem Absatz
-  const vg = [];
+  // 2) Anamnese-Absatz (Vorerkrankungen, OPs, Traumen)
+  const anamneseSaetze = [];
   const dg = s.vorgeschichte.diagnosen.map((d) => DIAGNOSE_LABEL[d] || d);
-  if (dg.length) vg.push("Diagnosen: " + dg.join(", "));
+  if (dg.length) {
+    const zusatz = [];
+    if (fmt("PMH-001-DM")) zusatz.push(`Diabetes: ${fmt("PMH-001-DM")}${a["PMH-001-DM-INSULIN"] === true ? ", insulinpflichtig" : ""}`);
+    if (fmt("PMH-001-HERZ")) zusatz.push(`Herz: ${fmt("PMH-001-HERZ")}`);
+    anamneseSaetze.push(`An Vorerkrankungen bestehen: ${dg.join(", ")}${zusatz.length ? " (" + zusatz.join("; ") + ")" : ""}.`);
+  }
   const ops = s.vorgeschichte.operationen.map((o) => [o.jahr, o.was].filter(Boolean).join(" ")).filter(Boolean);
-  if (ops.length) vg.push("OPs: " + ops.join("; "));
+  if (ops.length) anamneseSaetze.push(`Voroperationen: ${ops.join("; ")}.`);
   const unf = (s.vorgeschichte.unfaelle || []).map((o) => [o.jahr, o.was].filter(Boolean).join(" ")).filter(Boolean);
-  if (unf.length) vg.push("Traumen: " + unf.join("; "));
-  const meds = s.vorgeschichte.medikamente.map((m) => m.medikament).filter(Boolean);
-  if (meds.length) vg.push("Medikamente: " + meds.join(", "));
-  if (s.vorgeschichte.blutverduenner) vg.push("⚠ Blutverdünner");
-  if (a["PMH-010"] === true) vg.push("⚠ Kortison");
-  if (s.vorgeschichte.allergien.length) vg.push("Allergien: " + s.vorgeschichte.allergien.join(", "));
-  if (vg.length) absatz("Vorgeschichte", vg.join(". ") + ".");
+  if (unf.length) anamneseSaetze.push(`Traumen: ${unf.join("; ")}.`);
+  absatz(anamneseSaetze.join(" "));
 
-  // Auffällige Organsysteme (Gates mit Ja/Unsicher) — Details im Reiter Vollständig
+  // 3) Medikation & Allergien
+  const medSaetze = [];
+  const meds = s.vorgeschichte.medikamente.map((m) => m.medikament).filter(Boolean);
+  const medWarn = [s.vorgeschichte.blutverduenner ? "⚠ Blutverdünner" : null, a["PMH-010"] === true ? "⚠ Kortison" : null].filter(Boolean);
+  if (meds.length || medWarn.length)
+    medSaetze.push(`Aktuelle Medikation: ${meds.length ? meds.join(", ") : "siehe Angaben"}${medWarn.length ? " — " + medWarn.join(", ") : ""}.`);
+  if (s.vorgeschichte.allergien.length) medSaetze.push(`Allergien: ${s.vorgeschichte.allergien.join(", ")}.`);
+  absatz(medSaetze.join(" "));
+
+  // 4) Systeme & Lebensstil
   const sysAuffaellig = [];
   Object.keys(a).forEach((k) => {
     if (!k.startsWith("SYSG-")) return;
@@ -960,26 +983,35 @@ function renderKompakt(container, s, therapistMode) {
     const label = def && def.group ? def.group.replace("Systemanamnese: ", "") : null;
     if (label) sysAuffaellig.push(label + (a[k] === "unsicher" ? " (unsicher)" : ""));
   });
-  if (sysAuffaellig.length) absatz("Systeme auffällig", sysAuffaellig.join(", ") + " — Details siehe Vollständig");
-
-  // Lebensstil in einer Zeile (nur was beantwortet wurde)
+  const teil4 = [];
+  if (sysAuffaellig.length) teil4.push(`Systemanamnestisch auffällig: ${sysAuffaellig.join(", ")} (Details siehe vollständige Anamnese).`);
   const leben = [];
-  if (fmt("D1-001")) leben.push(`Schlaf: ${fmt("D1-001")}`);
-  if (fmt("ERN-001")) leben.push(`Ernährung: ${fmt("ERN-001")}`);
-  if (fmt("SD-012")) leben.push(`Sport: ${fmt("SD-012")}`);
-  if (fmt("PMH-015")) leben.push(`Rauchen: ${fmt("PMH-015")}`);
-  if (fmt("PMH-016")) leben.push(`Alkohol: ${fmt("PMH-016")}`);
-  if (leben.length) absatz("Lebensstil", leben.join(" · "));
+  if (fmt("D1-001")) leben.push(`Schlaf ${fmt("D1-001")}`);
+  if (fmt("ERN-010")) leben.push(`Ernährung ${fmt("ERN-010")}`);
+  if (fmt("SD-012")) leben.push(`Sport ${fmt("SD-012")}`);
+  if (fmt("PMH-015")) leben.push(`Rauchen ${fmt("PMH-015")}`);
+  if (fmt("PMH-016")) leben.push(`Alkohol ${fmt("PMH-016")}`);
+  if (leben.length) teil4.push(`Lebensstil: ${leben.join(", ")}.`);
+  absatz(teil4.join(" "));
 
-  // Vitalität, Ziele, Befunde, Verlauf
-  absatz("Vitalität (7 Faktoren)", faktorenZeile(s.faktoren));
-  if (s.ziele.length) absatz("Ziele", s.ziele.map((z) => z.zielText).filter(Boolean).join("; "));
+  // 5) Befunde & Verlauf
+  const teil5 = [];
   if (s.befundErkenntnisse && s.befundErkenntnisse.length)
-    absatz("Befunde", s.befundErkenntnisse.map((b) => `${b.fachbereich}: ${b.notiz}`).join(" · "));
-  else if (s.labor.uploads.length)
-    absatz("Befunde", `${s.labor.uploads.length} Dokument(e) hochgeladen — siehe Reiter Befunde`);
+    teil5.push(`Vorliegende Befunde: ${s.befundErkenntnisse.map((b) => `${b.fachbereich}: ${b.notiz}`).join("; ")}.`);
+  else if (s.labor.uploads.length) teil5.push(`${s.labor.uploads.length} Befund-Dokument(e) hochgeladen (siehe Reiter Befunde).`);
   const tlEvents = s.timeline.filter((e) => e.jahr != null);
-  if (tlEvents.length) absatz("Verlauf", tlEvents.map((e) => `${e.jahr} ${e.text}`.trim()).join(" · "));
+  if (tlEvents.length) teil5.push(`Relevanter Verlauf: ${tlEvents.map((e) => `${e.jahr} ${e.text}`.trim()).join("; ")}.`);
+  absatz(teil5.join(" "));
+
+  // 6) Ziele & Vitalität
+  const teil6 = [];
+  if (s.ziele.length) teil6.push(`Behandlungsziele: ${s.ziele.map((z) => z.zielText).filter(Boolean).map((t) => `„${t}“`).join("; ")}.`);
+  teil6.push(`Vitalitätsprofil (7 Faktoren): ${faktorenZeile(s.faktoren)}.`);
+  absatz(teil6.join(" "));
+
+  // 7) Günstige Zeichen (Green Flags)
+  const green = computeGreenFlags(a, s, safetyStatus(a));
+  if (green.length) markiert("🟢 Günstige Zeichen", green.join(" · "), "var(--color-status-green)");
 
   // Therapeuten-Absatz (nur im Therapeuten-Modus)
   if (therapistMode) {
@@ -990,7 +1022,7 @@ function renderKompakt(container, s, therapistMode) {
     if (rp) t.push(AMPEL_TEXT[rp.gesamt.ampel]);
     if (rp && rp.gesamt.kontraindikationen.length) t.push("⛔ " + rp.gesamt.kontraindikationen.join(" · "));
     if (rp) t.push(`Fraktur ${rp.fraktur.stufe} · HWS-Manip. ${rp.hws_manipulation.klasse} · kardiovask. ${rp.kardiovaskulaer.stufe}`);
-    absatz("Therapist only", t.join(" · "));
+    markiert("Therapist only", t.join(" · "));
   }
 }
 
@@ -1376,6 +1408,15 @@ export function registerAbschlussStep() {
         akteControls.style.gap = "8px";
         akteControls.style.flexWrap = "wrap";
         akteControls.style.marginBottom = "16px";
+        // Lebende Akte, verständlich erklärt: Datum läuft automatisch; bei
+        // einem späteren Besuch wird ERGÄNZT, nicht neu begonnen.
+        const akteHint = el("p", "field-hint",
+          "Ihre Anamnese wird mit dem heutigen Datum in Ihrer Gesundheitsakte gespeichert. " +
+          "Kommt später etwas Neues dazu (neue Beschwerde, neues Ereignis, neuer Befund), melden Sie sich einfach wieder an und ergänzen es — " +
+          "Ihre Grunddaten und Ihre bisherige Historie bleiben erhalten, nichts muss doppelt ausgefüllt werden.");
+        akteHint.style.width = "100%";
+        akteHint.style.margin = "0 0 6px";
+        akteControls.appendChild(akteHint);
         const uebernehmen = el("button", "btn btn--primary", state.meta.sitzungArchiviert ? "✓ In Akte übernommen" : "In meine Gesundheitsakte übernehmen");
         uebernehmen.type = "button";
         uebernehmen.disabled = state.meta.sitzungArchiviert === true;

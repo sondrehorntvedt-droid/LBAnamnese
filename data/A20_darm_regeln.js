@@ -77,6 +77,14 @@ export const DARM_REGELN = [
   { id: "DR-STRESS", wenn: { feld: "D4-013", op: "==", wert: "stark" },
     grund: "Stark stressgetriggerte Darmbeschwerden",
     beratung: ["Darm-Hirn-Achse adressieren (Stressregulation, Atmung, Schlaf; Orientierung E. Mayer)"] },
+
+  // ── Kau-Verhalten (F.X. Mayr, 1875–1965) ─────────────────────
+  { id: "DR-KAU-SCHLINGT", wenn: { feld: "ERN-T-KAU", op: "==", wert: "schlinge" },
+    grund: "Schlingt — kaut kaum",
+    beratung: ["Gründlicher kauen (~20–30× pro Bissen, F.X. Mayr): die Vorverdauung beginnt im Mund und entlastet Magen & Darm"] },
+  { id: "DR-KAU-WENIG", wenn: { feld: "ERN-T-KAU", op: "==", wert: "unter10" },
+    grund: "Kaut wenig (unter ~10×)",
+    beratung: ["Kau-Bewusstsein aufbauen (Ziel ~20–30× pro Bissen, F.X. Mayr); langsamer essen, Besteck zwischen den Bissen ablegen"] },
 ];
 
 /** Darm-Red-Flags (dringend, aber ohne Sofort-Stopp — über globalen Wächter). */

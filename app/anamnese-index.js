@@ -27,6 +27,7 @@ import { THERAPIE_HISTORIE_MODALITAETEN, THERAPIE_ERFOLG_OPTIONEN, THERAPIE_HAEU
 import { GELENKE_BAUM } from "../data/A06_gelenke_baum.js";
 import { SYSTEMISCHE_BAUM } from "../data/A07_systemisch_baum.js";
 import { PATIENT_TYP_FRAGEN, SAEUGLING_ABSCHNITTE } from "../data/A16_saeugling_eltern.js";
+import { KIND_ABSCHNITTE } from "../data/A23_kind_eltern.js";
 import { FAKTOREN_WOVEN_FRAGEN } from "./faktoren-mapping.js";
 import { ABSOLUTE_RED_FLAGS } from "../data/cdss/00_red_flags.js";
 
@@ -113,6 +114,10 @@ ABSOLUTE_RED_FLAGS.forEach((rf) =>
 addList(PATIENT_TYP_FRAGEN, "Für wen?");
 SAEUGLING_ABSCHNITTE.forEach((abschnitt) => {
   addList(abschnitt.fragen, "Säugling: " + abschnitt.titel);
+});
+// Kinder-Anamnese 2–11 Jahre (A23) — gruppiert je Abschnitt.
+KIND_ABSCHNITTE.forEach((abschnitt) => {
+  addList(abschnitt.fragen, "Kind: " + abschnitt.titel);
 });
 
 // ── Beschwerde-bezogene Fragen (namespaced) ─────────────────

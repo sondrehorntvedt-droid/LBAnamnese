@@ -152,7 +152,7 @@ export function registerSystemanamneseStep() {
   registerStep({
     id: "systemanamnese",
     // Erwachsenen-Modul: bei Säuglings-Anamnese (Eltern-Fragebogen) ausgeblendet.
-    isVisible: (answers) => answers["PT-001"] !== "saeugling",
+    isVisible: (answers) => !["saeugling", "kind"].includes(answers["PT-001"]),
     group: "Systemanamnese",
     eyebrow: "Systemanamnese",
     title: SYSTEMANAMNESE_INTRO.titel,

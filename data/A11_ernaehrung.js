@@ -353,6 +353,22 @@ export const ERNAEHRUNG_TIEFE_FRAGEN = [
     ],
   },
   {
+    // Kau-Gründlichkeit nach F.X. Mayr (1875–1965): gründliches Kauen
+    // (~30× pro Bissen) entlastet die Verdauung — die Vorverdauung beginnt
+    // im Mund. Speist die Darm-/Verdauungs-Beratung.
+    id: "ERN-T-KAU",
+    frage: "Wie gründlich kauen Sie einen Bissen, bevor Sie schlucken?",
+    type: "single_choice",
+    section: "Essverhalten",
+    required: false,
+    options: [
+      { value: "schlinge", label: "Ich schlinge eher — kaum gekaut" },
+      { value: "unter10", label: "Wenige Male (unter ~10×)" },
+      { value: "10_20", label: "Mittel (~10–20×)" },
+      { value: "gruendlich30", label: "Sehr gründlich (~20–30×, nach F.X. Mayr ideal)" },
+    ],
+  },
+  {
     id: "ERN-T-006",
     frage: "Essen Sie manchmal aus emotionalen Gründen (Stress, Langeweile, Frust, Belohnung)?",
     type: "single_choice",
