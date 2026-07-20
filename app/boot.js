@@ -19,6 +19,7 @@ import {
   goToStepId,
 } from "./router.js";
 import { initRedFlagWatcher } from "./redflags.js";
+import { renderThemeSchalter } from "./theme.js";
 import { ensureSitzungInit } from "./patient-record.js";
 import { startAutoSync } from "./cloud-sync.js";
 import "./steps/register-all.js";
@@ -46,6 +47,9 @@ export function startApp() {
     const sidebarFooter = el("div", "sidebar-footer");
     const timeEstimate = el("p", "field-hint", "");
     sidebarFooter.appendChild(timeEstimate);
+    // Hell/Dunkel-Umschalter fest in der App-Navigation (zusätzlich zum
+    // festen Knopf oben rechts) — damit er in der App unübersehbar ist.
+    renderThemeSchalter(sidebarFooter);
     // Immer erreichbarer Rückweg zum Ursprung („Für wen ist diese Anamnese?")
     // — ein Klick genügt, egal wo man gerade steht (Wunsch Sondre: der Weg
     // zurück aus dem Säuglings-/Kinder-Fragebogen darf nicht mühsam sein).
@@ -69,6 +73,8 @@ export function startApp() {
     track.appendChild(fill);
     progressWrap.appendChild(track);
     headerRow.appendChild(progressWrap);
+    // Hell/Dunkel-Umschalter auch im mobilen Top-Bar (kompakt).
+    renderThemeSchalter(headerRow, { kompakt: true });
     // Mobiler Rückweg zum Ursprung (analog Sidebar-Footer)
     const fuerWenMobil = el("button", "auth-link", "Für wen?");
     fuerWenMobil.type = "button";
