@@ -40,6 +40,19 @@ export const ZIEL_KATEGORIEN = [
     messung: "psfs",
   },
   {
+    // Prä-/postoperative Reha & Recovery nach Verletzung/Erkrankung —
+    // eigener Zieltyp (Prähabilitation verbessert Post-OP-Outcomes,
+    // Santa Mina 2014). Die DETAILS zu OP/Erkrankung gehören in
+    // Vorgeschichte & Beschwerden — hier nur das Ziel; Messung = PSFS,
+    // denn Recovery-Ziele sind Funktionsziele.
+    value: "reha_recovery",
+    icon: "🩹",
+    label: "Reha & Recovery — nach OP, Verletzung oder Erkrankung",
+    hint: "z.B. nach der Knie-OP wieder voll belastbar sein, nach dem Bandscheibenvorfall wieder arbeiten — oder sich optimal auf eine OP vorbereiten (Prehab)",
+    platzhalter: "z.B. Drei Monate nach meiner Knie-OP wieder schmerzfrei Treppen steigen",
+    messung: "psfs",
+  },
+  {
     value: "beweglichkeit_stabilitaet",
     icon: "🤸",
     label: "Beweglicher, stabiler & kräftiger werden",
@@ -143,7 +156,7 @@ export const ZIEL_MESSUNGEN = {
  * gewählt hat, bekommt sie nicht (Schmerz je Beschwerde folgt ohnehin
  * in HB-004).
  */
-export const SCHMERZ_NRS_WENN = ["schmerz_funktion", "beweglichkeit_stabilitaet", "leistung"];
+export const SCHMERZ_NRS_WENN = ["schmerz_funktion", "reha_recovery", "beweglichkeit_stabilitaet", "leistung"];
 
 /** Kategorie-Lookup (value → Definition). */
 export function getZielKategorie(value) {

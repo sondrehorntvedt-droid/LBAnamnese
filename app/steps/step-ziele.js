@@ -47,7 +47,7 @@ function zielFeld(zielId, feld) {
   return z ? z[feld] : undefined;
 }
 
-function renderZielCard(zielId, index) {
+function renderZielCard(zielId, index, erstesSchmerzZielId) {
   const card = el("div", "card");
   card.style.marginBottom = "16px";
   card.dataset.zielId = zielId;
@@ -132,6 +132,27 @@ function renderZielCard(zielId, index) {
   }
   // messung.typ === "keine": bewusst keine Baseline (Prävention/Longevity).
 
+  // Schmerz aktuell (globale 7-Tage-NRS; Farrar 2001) — wird EINMAL erhoben
+  // und direkt beim ERSTEN schmerz-/funktionsbezogenen Ziel eingebettet.
+  // So ist klar, wozu die Frage gehört (Sondres Punkt: nach einem
+  // Abnehm-Ziel wirkte der frei schwebende Schmerz-Block deplatziert).
+  if (zielId === erstesSchmerzZielId) {
+    stack.appendChild(
+      renderQuestion(
+        {
+          id: "NRS-avg",
+          frage: "Wie stark waren Ihre Schmerzen im Durchschnitt der letzten 7 Tage?",
+          type: "vas_scale",
+          min: NRS_ANKER.min,
+          max: NRS_ANKER.max,
+          labels: NRS_ANKER.labels,
+          hint: "Wird einmal erfasst und gilt für alle Ihre schmerzbezogenen Ziele. Die Schmerzstärke jeder einzelnen Beschwerde erfassen wir später im Beschwerde-Teil.",
+        },
+        { getValue: (id) => state.get(id), setValue: (id, v) => state.set(id, v) }
+      )
+    );
+  }
+
   // 4) Zeitrahmen (+ Datumsfeld bei „bis zu einem Datum")
   stack.appendChild(
     renderQuestion(
@@ -180,8 +201,9 @@ export function registerZieleStep() {
         // Signatur enthält Kategorie & Zeitrahmen: Kachel-Klicks zeichnen
         // sofort neu (Auswahl sichtbar, Baum wechselt). Text-/Slider-Werte
         // absichtlich NICHT in der Signatur (kein Fokusverlust beim Tippen).
-        const hatSchmerzZiel = ziele.some((z) => SCHMERZ_NRS_WENN.includes(z.kategorie));
-        const sig = ziele.map((z) => `${z.id}:${z.kategorie}:${z.zeitrahmen}`).join("|") + `#${hatSchmerzZiel}`;
+        const erstesSchmerzZiel = ziele.find((z) => SCHMERZ_NRS_WENN.includes(z.kategorie));
+        const erstesSchmerzZielId = erstesSchmerzZiel ? erstesSchmerzZiel.id : null;
+        const sig = ziele.map((z) => `${z.id}:${z.kategorie}:${z.zeitrahmen}`).join("|") + `#${erstesSchmerzZielId}`;
         if (sig === lastSig) return;
         lastSig = sig;
 
@@ -191,7 +213,7 @@ export function registerZieleStep() {
         container.appendChild(el("div", "section-label", "Ihre Ziele"));
         const zieleWrap = el("div");
         zieleWrap.style.marginTop = "12px";
-        ziele.forEach((z, i) => zieleWrap.appendChild(renderZielCard(z.id, i)));
+        ziele.forEach((z, i) => zieleWrap.appendChild(renderZielCard(z.id, i, erstesSchmerzZielId)));
         container.appendChild(zieleWrap);
         if (ziele.length < MAX_ZIELE) {
           const add = el("button", "btn btn--ghost", "+ Weiteres Ziel hinzufügen");
@@ -200,21 +222,9 @@ export function registerZieleStep() {
           container.appendChild(add);
         }
 
-        // Schicht 2 — Schmerz-NRS: NUR bei schmerz-/funktionsbezogenen Zielen.
-        if (hatSchmerzZiel) {
-          container.appendChild(el("div", "section-label", "Schmerz heute"));
-          const nrsWrap = el("div", "field-stack");
-          nrsWrap.style.marginTop = "12px";
-          nrsWrap.style.marginBottom = "20px";
-          nrsWrap.appendChild(
-            renderQuestion(
-              { id: "NRS-avg", frage: "Wie stark waren Ihre Schmerzen im Durchschnitt der letzten 7 Tage?", type: "vas_scale", min: NRS_ANKER.min, max: NRS_ANKER.max, labels: NRS_ANKER.labels },
-              { getValue: (id) => state.get(id), setValue: (id, v) => state.set(id, v) }
-            )
-          );
-          nrsWrap.appendChild(el("p", "field-hint", "Die Schmerzstärke jeder einzelnen Beschwerde erfassen wir zusätzlich im Beschwerde-Teil."));
-          container.appendChild(nrsWrap);
-        }
+        // (Die globale Schmerz-NRS ist in die Karte des ERSTEN
+        // schmerzbezogenen Ziels eingebettet — kein frei schwebender
+        // Block mehr hinter allen Zielen.)
 
         // Schicht 3 — Wohlbefinden (WHO-5), für alle.
         container.appendChild(el("div", "section-label", "Ihr Wohlbefinden (WHO-5)"));
