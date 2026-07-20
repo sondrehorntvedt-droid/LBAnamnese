@@ -27,7 +27,7 @@ export function renderRadarChart(canvas, profil) {
   const angleStep = (Math.PI * 2) / n;
 
   // Grid rings
-  ctx.strokeStyle = "#E4E0D6";
+  ctx.strokeStyle = "#D6D2C6";
   ctx.lineWidth = 1;
   [2, 4, 6, 8, 10].forEach((ring) => {
     const r = (ring / 10) * maxRadius;
@@ -41,15 +41,15 @@ export function renderRadarChart(canvas, profil) {
   });
 
   // Axes + labels
-  ctx.fillStyle = "#5B5F57";
-  ctx.font = "11px Montserrat, sans-serif";
+  ctx.fillStyle = "#6B716E";
+  ctx.font = "10px Marcellus, Georgia, serif";
   AXES.forEach((label, i) => {
     const angle = i * angleStep;
     const p = point(cx, cy, maxRadius, angle);
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(p.x, p.y);
-    ctx.strokeStyle = "#E4E0D6";
+    ctx.strokeStyle = "#D6D2C6";
     ctx.stroke();
 
     const labelPoint = point(cx, cy, maxRadius + 18, angle);
@@ -77,9 +77,9 @@ export function renderRadarChart(canvas, profil) {
       else ctx.lineTo(p.x, p.y);
     });
     ctx.closePath();
-    ctx.fillStyle = "rgba(78, 167, 46, 0.22)";
+    ctx.fillStyle = "rgba(116, 139, 116, 0.30)";
     ctx.fill();
-    ctx.strokeStyle = "#124F1A";
+    ctx.strokeStyle = "#50654E";
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -89,7 +89,7 @@ export function renderRadarChart(canvas, profil) {
       const p = point(cx, cy, r, i * angleStep);
       ctx.beginPath();
       ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = "#124F1A";
+      ctx.fillStyle = "#50654E";
       ctx.fill();
     });
   }

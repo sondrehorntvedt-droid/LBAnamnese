@@ -1,7 +1,22 @@
 /**
  * LINDEBERGS OS — Components
- * Weiche, organische Formen. Kein hartes Schatten-Design.
+ * Formsprache aus dem offiziellen Design System: architektonisch-ruhig,
+ * Marcellus-Caps für Headings/Labels/Buttons, Cardo für Text, Pill-Buttons
+ * mit Sage-Glow, Hairline-Felder, diffuse Schatten.
  */
+
+/* ── Typografie-Rollen (Marcellus für alle Überschriften) ── */
+h1, h2, h3, .step-title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.02em;
+  line-height: 1.18;
+}
+.step-eyebrow, .eyebrow {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
 
 /* ── Gesundheitskonto-Fortschrittsbalken (Rot→Gelb→Grün) ── */
 .progress-track {
@@ -39,36 +54,41 @@
   border: none;
 }
 
-/* ── Buttons ─────────────────────────────────────────────── */
+/* ── Buttons — die Lindebergs-Signatur-Pill (Marcellus-Caps) ── */
 .btn {
-  font-family: var(--font-family);
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-body);
+  font-family: var(--font-display);
+  font-weight: var(--weight-regular);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
   border-radius: var(--radius-pill);
-  padding: var(--space-3) var(--space-6);
-  border: none;
+  padding: 0.85rem 1.9rem;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), opacity 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
 }
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:active { transform: scale(0.99); box-shadow: none; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn--primary {
-  background: var(--color-forest-800);
-  color: var(--color-text-on-forest);
+  background: var(--accent);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sage);
 }
-.btn--primary:hover:not(:disabled) { background: var(--color-forest-700); }
+.btn--primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn--primary:active:not(:disabled) { background: var(--accent-press); color: var(--color-cloud); }
 
 .btn--ghost {
   background: transparent;
   color: var(--color-text-secondary);
-  padding: var(--space-3) var(--space-4);
+  padding: 0.85rem var(--space-4);
 }
-.btn--ghost:hover { color: var(--color-forest-800); }
+.btn--ghost:hover { color: var(--color-text-primary); background: rgba(14, 25, 25, 0.05); }
 
 .btn--danger {
   background: var(--color-danger);
@@ -104,14 +124,15 @@ input[type="date"], input[type="password"], textarea, select {
   font-size: var(--text-body);
   color: var(--color-text-primary);
   background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--color-sage);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 textarea { resize: vertical; min-height: 90px; }
 
@@ -127,8 +148,8 @@ textarea { resize: vertical; min-height: 90px; }
   width: 100%;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   cursor: pointer;
   font-family: var(--font-family);
@@ -183,9 +204,10 @@ input[type="range"].vas-slider {
 }
 .vas-value {
   text-align: center;
+  font-family: var(--font-display);
   font-size: var(--text-h2);
-  font-weight: var(--weight-ultralight);
-  color: var(--color-forest-800);
+  font-weight: var(--weight-regular);
+  color: var(--color-text-primary);
   margin-bottom: var(--space-2);
 }
 
@@ -229,26 +251,29 @@ input[type="range"].vas-slider {
 }
 .emergency-card h2 { color: var(--color-danger); font-weight: var(--weight-semibold); }
 
-/* ── Section-Label (ALL CAPS) ────────────────────────────── */
+/* ── Section-Label — Marcellus-Eyebrow (Lindebergs-Sperrung) ── */
 .section-label {
+  font-family: var(--font-display);
   font-size: var(--text-label);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-regular);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--color-taupe);
+  color: var(--color-text-muted);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  font-family: var(--font-display);
   font-size: var(--text-label);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.04em;
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-sage-tint);
-  color: var(--color-sage);
+  color: var(--color-sage-deep);
 }
 .badge--provisional {
   background: var(--color-warning-bg);
@@ -256,9 +281,11 @@ input[type="range"].vas-slider {
 }
 
 .tagline {
-  font-weight: var(--weight-ultralight);
+  font-family: var(--font-family);
+  font-style: italic;
+  font-weight: var(--weight-regular);
   font-size: var(--text-h2);
-  color: var(--color-forest-700);
+  color: var(--color-sage-deep);
   line-height: 1.4;
 }
 

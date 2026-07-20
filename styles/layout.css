@@ -41,11 +41,15 @@ html, body {
   overflow-y: auto;
 }
 
+/* Wordmark — Marcellus, Caps, weiteste Lindebergs-Sperrung */
 .app-logo {
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-h3);
-  color: var(--color-forest-800);
-  letter-spacing: var(--tracking-tight);
+  font-family: var(--font-display);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-widest);
+  text-indent: var(--tracking-widest);
   margin-bottom: var(--space-6);
 }
 

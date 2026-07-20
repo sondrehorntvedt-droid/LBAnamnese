@@ -1,75 +1,116 @@
 /**
  * LINDEBERGS OS — Design Tokens
- * "Nordic Health Luxury" — extrahiert aus Brand Book 3.0
+ * "Nordic Health Luxury" — portiert aus dem offiziellen Lindebergs Design
+ * System (claude.ai/design „Lindebergs Design System", tokens/*, Quelle:
+ * Corporate-Design-Guide Hallo.pdf).
  *
- * Prinzip: ruhig, hell, organisch. Nicht dekorieren — einstimmen ("attune").
+ * Offizielle Palette (verbindlich, 5 Farben):
+ *   #0E1919 ink · #748B74 sage (DER Akzent) · #E7E4DA bone ·
+ *   #FBF7F5 cloud · #312F2C charcoal
+ * Typografie: MARCELLUS (Display/Headings, Caps, weit gesperrt) +
+ * CARDO (Fließtext). Formsprache: architektonisch-ruhig, Pill-Buttons,
+ * diffuse Schatten wie nordisches Licht.
+ *
+ * WICHTIG: Die alten Token-NAMEN bleiben erhalten (forest/camel/terracotta …),
+ * damit kein Bestandscode bricht — sie sind auf die offizielle Palette
+ * gemappt. Neue Arbeit nutzt direkt ink/sage/bone/cloud.
+ *
+ * BEWUSSTE ABWEICHUNG: Das Design System kennt keine Statusfarben (Sage ist
+ * das einzige Signal). Für klinische Sicherheit (Red Flags, Notfall-Overlay,
+ * Gesundheitskonto Rot→Gelb→Grün) behalten wir Rot/Gelb/Grün — Patienten-
+ * sicherheit vor Markenpurismus.
  */
 
 :root {
-  /* ── Farben — Primär (Wald-Grün) ────────────────────── */
-  --color-forest-900: #0d3a13;
-  --color-forest-800: #124F1A; /* Logo / Headings */
-  --color-forest-700: #1c5e26;
-  --color-forest-600: #275317;
-  --color-forest-500: #3A7C22; /* Callouts */
-  --color-forest-400: #4EA72E; /* Vital-Akzent, sparsam */
+  /* ── Offizielle Palette (locked) ─────────────────────── */
+  --color-ink: #0E1919;
+  --color-sage: #748B74;
+  --color-bone: #E7E4DA;
+  --color-cloud: #FBF7F5;
+  --color-charcoal: #312F2C;
 
-  /* ── Farben — Sekundär (Camel / Taupe, Labels) ──────── */
-  --color-camel: #A07E57;
-  --color-taupe: #8C7F75;
+  /* Abgeleitete Skalen (aus dem Design System) */
+  --color-ink-raised: #16221E;
+  --color-ink-deep: #081210;
+  --color-sage-light: #98AC97;
+  --color-sage-pale: #DBE2D6;
+  --color-sage-deep: #50654E;
+  --color-bone-deep: #D6D2C6;
+  --color-sage-100: #DBE2D6; /* Alias für Chip-Hintergründe */
 
-  /* ── Farben — Weicher Akzent (Salbei) ───────────────── */
-  --color-sage: #648B6D;
-  --color-sage-tint: #e7ede8;
+  /* ── Legacy-Namen → offizielle Palette (nicht neu verwenden) ── */
+  --color-forest-900: var(--color-ink-deep);
+  --color-forest-800: var(--color-ink);        /* Headings */
+  --color-forest-700: #1A2A2A;                 /* Hover-Dunkel */
+  --color-forest-600: var(--color-charcoal);
+  --color-forest-500: var(--color-sage-deep);  /* Auswahl/Callouts */
+  --color-forest-400: var(--color-sage);
+  --color-camel: #6B716E;                      /* Labels → gedämpft */
+  --color-taupe: #6B716E;
+  --color-sage-tint: var(--color-sage-pale);
+  --color-terracotta: var(--color-sage-deep);  /* Abschnitts-Marker */
 
-  /* ── Farben — Struktur-Akzent (Terracotta, selten!) ── */
-  --color-terracotta: #E97132;
+  /* Semantische Kurzformen (von Inline-Styles genutzt) */
+  --color-primary: var(--color-ink);
+  --color-secondary: #6B716E;
+  --accent: var(--color-sage);
+  --accent-hover: #849A83;
+  --accent-press: var(--color-sage-deep);
+  --focus-ring: rgba(116, 139, 116, 0.45);
 
-  /* ── Gesundheitskonto: Rot → Gelb → Grün ────────────── */
+  /* ── Status (klinisch — bewusste Abweichung, s.o.) ───── */
   --color-status-red: #C4573F;
   --color-status-yellow: #D9A63C;
   --color-status-green: #4EA72E;
 
-  /* ── Hintergrund / Oberflächen (hell, warm) ─────────── */
-  --color-bg: #FBFAF7;
+  /* ── Oberflächen (Cloud-Grund, weiße Karten, Bone-Akzente) ── */
+  --color-bg: var(--color-cloud);
   --color-surface: #FFFFFF;
-  --color-surface-sunken: #F3F1EB;
-  --color-border: #E4E0D6;
+  --color-surface-sunken: #F0EDE4;
+  --color-border: #D9D5C9;
 
   /* ── Text ────────────────────────────────────────────── */
-  --color-text-primary: #1E241F;
-  --color-text-secondary: #5B5F57;
-  --color-text-muted: #8C8F87;
-  --color-text-on-forest: #F7F9F4;
+  --color-text-primary: var(--color-ink);
+  --color-text-secondary: #2C3433;
+  --color-text-muted: #6B716E;
+  --color-text-on-forest: var(--color-bone);
 
   /* ── Semantik / Alerts ───────────────────────────────── */
   --color-danger: #B3261E;
   --color-danger-bg: #FBECEA;
   --color-warning-bg: #FCF3E3;
 
-  /* ── Typografie ──────────────────────────────────────── */
-  --font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-  --weight-hairline: 100;
-  --weight-ultralight: 200;
-  --weight-light: 300;
-  --weight-regular: 400;
-  --weight-semibold: 600;
+  /* ── Typografie — zwei Serifen, keine Sans ───────────── */
+  --font-display: "Marcellus", "Cormorant Garamond", Georgia, serif;
+  --font-display-sc: "Marcellus SC", "Marcellus", Georgia, serif;
+  --font-family: "Cardo", "Iowan Old Style", Georgia, "Times New Roman", serif;
 
-  --tracking-label: 0.14em;
+  /* Beide Schriften sind Ein-Gewicht-Serifen: 400 (+ Cardo Bold 700).
+     Legacy-Gewichte bleiben als Namen erhalten, zeigen aber auf 400/700. */
+  --weight-hairline: 400;
+  --weight-ultralight: 400;
+  --weight-light: 400;
+  --weight-regular: 400;
+  --weight-medium: 400;
+  --weight-semibold: 700;
+
+  --tracking-label: 0.18em;   /* Eyebrows/Overlines — die Lindebergs-Sperrung */
+  --tracking-wide: 0.08em;
+  --tracking-widest: 0.34em;  /* Wordmark */
   --tracking-tight: -0.01em;
 
-  --text-display: 2.4rem;
-  --text-h1: 1.7rem;
-  --text-h2: 1.3rem;
-  --text-h3: 1.05rem;
+  --text-display: 2.6rem;
+  --text-h1: 1.75rem;
+  --text-h2: 1.375rem;
+  --text-h3: 1.125rem;
   --text-body: 1rem;
-  --text-small: 0.85rem;
+  --text-small: 0.875rem;
   --text-label: 0.72rem;
 
-  /* ── Radii / Spacing — organisch, weich ─────────────── */
-  --radius-sm: 10px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
+  /* ── Radii — architektonisch, nicht bubbly ───────────── */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
   --radius-pill: 999px;
 
   --space-1: 4px;
@@ -81,43 +122,66 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  --shadow-soft: 0 2px 16px rgba(18, 79, 26, 0.06);
-  --shadow-lift: 0 8px 32px rgba(18, 79, 26, 0.10);
+  /* ── Schatten — diffus, warm, wie nordisches Licht ───── */
+  --shadow-soft: 0 2px 8px rgba(14, 25, 25, 0.06);
+  --shadow-lift: 0 10px 30px -12px rgba(14, 25, 25, 0.18);
+  --shadow-sage: 0 18px 40px -16px rgba(81, 102, 79, 0.42);
+
+  /* ── Motion — ruhig, nie bouncy ──────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur-base: 320ms;
 
   --max-width: 720px;
 }
 
+/* ── Dark Theme — die Ink-Welt des Design Systems ───────── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #12140F;
-    --color-surface: #1A1E17;
-    --color-surface-sunken: #21261D;
-    --color-border: #2E332A;
-    --color-text-primary: #F2F4EE;
-    --color-text-secondary: #C7CBC0;
-    --color-text-muted: #8C9086;
-    --color-sage-tint: #232a25;
+    --color-bg: var(--color-ink);
+    --color-surface: var(--color-ink-raised);
+    --color-surface-sunken: #1B2723;
+    --color-border: #2A342F;
+    --color-text-primary: var(--color-cloud);
+    --color-text-secondary: var(--color-bone);
+    --color-text-muted: #9AA39A;
+    --color-primary: var(--color-cloud);
+    --color-secondary: #9AA39A;
+    --color-camel: #9AA39A;
+    --color-taupe: #9AA39A;
+    --color-sage-tint: #1F2A22;
+    --color-sage-100: #1F2A22;
   }
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #12140F;
-  --color-surface: #1A1E17;
-  --color-surface-sunken: #21261D;
-  --color-border: #2E332A;
-  --color-text-primary: #F2F4EE;
-  --color-text-secondary: #C7CBC0;
-  --color-text-muted: #8C9086;
-  --color-sage-tint: #232a25;
+  --color-bg: var(--color-ink);
+  --color-surface: var(--color-ink-raised);
+  --color-surface-sunken: #1B2723;
+  --color-border: #2A342F;
+  --color-text-primary: var(--color-cloud);
+  --color-text-secondary: var(--color-bone);
+  --color-text-muted: #9AA39A;
+  --color-primary: var(--color-cloud);
+  --color-secondary: #9AA39A;
+  --color-camel: #9AA39A;
+  --color-taupe: #9AA39A;
+  --color-sage-tint: #1F2A22;
+  --color-sage-100: #1F2A22;
 }
 
 :root[data-theme="light"] {
-  --color-bg: #FBFAF7;
+  --color-bg: var(--color-cloud);
   --color-surface: #FFFFFF;
-  --color-surface-sunken: #F3F1EB;
-  --color-border: #E4E0D6;
-  --color-text-primary: #1E241F;
-  --color-text-secondary: #5B5F57;
-  --color-text-muted: #8C8F87;
-  --color-sage-tint: #e7ede8;
+  --color-surface-sunken: #F0EDE4;
+  --color-border: #D9D5C9;
+  --color-text-primary: var(--color-ink);
+  --color-text-secondary: #2C3433;
+  --color-text-muted: #6B716E;
+  --color-primary: var(--color-ink);
+  --color-secondary: #6B716E;
+  --color-camel: #6B716E;
+  --color-taupe: #6B716E;
+  --color-sage-tint: var(--color-sage-pale);
+  --color-sage-100: var(--color-sage-pale);
 }
