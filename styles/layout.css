@@ -54,15 +54,19 @@ html, body {
   --color-camel: #9AA39A;
 }
 
-/* Wordmark — Marcellus, Caps, weiteste Lindebergs-Sperrung */
+/* Wordmark — exakt nach Design-System-Komponente (components/brand/Wordmark):
+   bei kleinen Größen 0.30em Sperrung (nicht 0.34em) und 0.16em optischer
+   Ausgleich für den nachlaufenden Buchstabenabstand. */
 .app-logo {
   font-family: var(--font-display);
   font-weight: var(--weight-regular);
   font-size: var(--text-body);
   text-transform: uppercase;
   color: var(--color-text-primary);
-  letter-spacing: var(--tracking-widest);
-  text-indent: var(--tracking-widest);
+  letter-spacing: 0.30em;
+  text-indent: 0.16em;
+  line-height: 1;
+  white-space: nowrap;
   margin-bottom: var(--space-6);
 }
 
