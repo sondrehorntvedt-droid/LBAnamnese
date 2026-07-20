@@ -174,6 +174,19 @@ function subKopf(card, text) {
   return h;
 }
 
+// Unter-Label eine Ebene unter subKopf — trennt innerhalb einer Beschwerde
+// den W-Fragen-Kern von den Zusatzangaben (Advisory Board: erst die
+// klassische Schmerzanamnese nach dem SOCRATES-Schema, danach Spezial- und
+// Inspektionsfragen aus der CDSS-Vertiefung).
+function miniLabel(card, text) {
+  const h = el("div", "field-hint", text);
+  h.style.letterSpacing = "0.08em";
+  h.style.textTransform = "uppercase";
+  h.style.fontWeight = "var(--weight-semibold)";
+  h.style.margin = "10px 0 2px";
+  card.appendChild(h);
+}
+
 // ✓-Liste: zeigt nur Zutreffendes — liest sich wie der ausgefüllte
 // Papierbogen (Kreuze), nicht wie ein Formular-Dump. Optional eingefärbt
 // (z.B. Rot für auffällige Red-Flag-Antworten, Grün für Green Flags).
@@ -474,41 +487,51 @@ function renderVollstaendig(container, s, therapistMode) {
         const k = `${b.id}::${id}`;
         return k in a ? formatAntwort(id, a[k]) : null;
       };
-      // Fließtext aus den W-Fragen — liest sich wie ein Aufnahmebefund.
+      // Aufbau je Beschwerde (Advisory-Board-Struktur, Sondres Vorgabe —
+      // identisch für Beschwerde 1..n): 1. Beschreibung in Patientenworten,
+      // 2. Schmerz als Grafik, 3. die W-Fragen strukturiert in fester
+      // Reihenfolge (klinische Schmerzanamnese, SOCRATES-Schema), 4. danach
+      // erst die Zusatzangaben aus der CDSS-Vertiefung (z.B. O-/X-Bein,
+      // Überwärmung/Rötung). Der frühere W-Fließtext lebt im Kompakt-
+      // Arztbericht weiter — hier wäre er nur Redundanz.
       if (g("HB-001")) {
         const z = el("p", null, `„${g("HB-001")}“`);
         z.style.margin = "0 0 4px";
         z.style.fontStyle = "italic";
         besch.appendChild(z);
       }
-      const teile = [];
-      if (g("HB-003")) teile.push(`Charakter: ${g("HB-003")}`);
-      if (g("HB-004")) teile.push(`Intensität Ø ${g("HB-004")}/10${g("HB-005") ? ` (max ${g("HB-005")}${g("HB-006") ? `, min ${g("HB-006")}` : ""})` : ""}`);
-      if (g("HB-007")) teile.push(`Beginn: ${g("HB-007")}`);
-      if (g("HB-008")) teile.push(`Verlauf: ${g("HB-008")}`);
-      if (g("HB-009")) teile.push(`Auslöser: ${g("HB-009")}`);
-      if (g("HB-010")) teile.push(`am schlimmsten: ${g("HB-010")}`);
-      if (g("HB-011")) teile.push(`lindernd: ${g("HB-011")}`);
-      if (g("HB-012")) teile.push(`verschlimmernd: ${g("HB-012")}`);
-      if (g("HB-013")) teile.push(`eigene Vermutung: „${g("HB-013")}“`);
-      if (teile.length) {
-        const fl = el("p", null, teile.join(" · ") + ".");
-        fl.style.margin = "0 0 6px";
-        fl.style.lineHeight = "1.55";
-        besch.appendChild(fl);
-      }
-      // Schmerz als Grafik: Balken (heute) + Schmerzkurve über Termine.
+      // Schmerz als Grafik: Balken (heute, Ø/max/min) + Schmerzkurve über Termine.
       schmerzGrafik(besch, b, a);
+      // Die W-Fragen im Überblick — Intensität steckt bereits in der Grafik.
+      const wZeilen = [
+        ["HB-003", "Charakter"],
+        ["HB-007", "Beginn"],
+        ["HB-008", "Verlauf seither"],
+        ["HB-009", "Auslöser"],
+        ["HB-010", "Am schlimmsten"],
+        ["HB-011", "Was lindert"],
+        ["HB-012", "Was verschlimmert"],
+        ["HB-013", "Eigene Vermutung"],
+      ].filter(([id]) => g(id) != null);
+      if (wZeilen.length) {
+        miniLabel(besch, "Die W-Fragen im Überblick");
+        wZeilen.forEach(([id, label]) => qaRow(besch, label, g(id)));
+      }
       // Übrige strukturierte Antworten dieser Beschwerde (CDSS-Vertiefung etc.);
       // Vorbehandlungen (TH-*) folgen gesammelt in Abschnitt Behandlungsanamnese.
+      const zusatz = [];
       Object.keys(INDEX).forEach((id) => {
         if (W_TEXT_IDS.includes(id) || id.startsWith("TH-")) return;
         const key = `${b.id}::${id}`;
         if (!(key in a)) return;
         const txt = formatAntwort(id, a[key]);
         if (txt == null) return;
-        qaRow(besch, getFrage(id).label, txt);
+        zusatz.push([getFrage(id).label, txt]);
       });
+      if (zusatz.length) {
+        miniLabel(besch, "Weitere Angaben zu dieser Beschwerde");
+        zusatz.forEach(([label, txt]) => qaRow(besch, label, txt));
+      }
       if (therapistMode && b.verdacht.length) {
         const v = el("p", "field-hint", "CDSS-Verdacht: " + b.verdacht.slice(0, 5).map((x) => `${x.label} (${x.score})`).join(", "));
         v.style.marginTop = "6px";
