@@ -107,6 +107,7 @@ export function getSidebarGroups() {
     remainingMinutes,
     groups: groups.map((g) => ({
       name: g.name,
+      firstIdx: g.firstIdx, // für Direktnavigation aus der Sidebar
       isCurrent: currentIdx >= g.firstIdx && currentIdx <= g.lastIdx,
       isDone: currentIdx > g.lastIdx,
     })),

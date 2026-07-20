@@ -57,7 +57,10 @@ export function startApp() {
     fuerWenLink.type = "button";
     fuerWenLink.style.marginTop = "10px";
     fuerWenLink.style.textAlign = "left";
-    fuerWenLink.addEventListener("click", () => goToStepId("patient-typ"));
+    fuerWenLink.addEventListener("click", () => {
+      goToStepId("patient-typ");
+      render();
+    });
     sidebarFooter.appendChild(fuerWenLink);
     sidebar.appendChild(sidebarFooter);
 
@@ -79,7 +82,10 @@ export function startApp() {
     const fuerWenMobil = el("button", "auth-link", "Für wen?");
     fuerWenMobil.type = "button";
     fuerWenMobil.style.flexShrink = "0";
-    fuerWenMobil.addEventListener("click", () => goToStepId("patient-typ"));
+    fuerWenMobil.addEventListener("click", () => {
+      goToStepId("patient-typ");
+      render();
+    });
     headerRow.appendChild(fuerWenMobil);
     header.appendChild(headerRow);
 
@@ -133,6 +139,21 @@ export function startApp() {
       const marker = el("span", "sidebar-nav__marker", g.isDone ? "✓" : "");
       item.appendChild(marker);
       item.appendChild(el("span", null, g.name));
+      // Direktnavigation (Sondre): jeder Menüpunkt springt direkt zum
+      // Anfang seines Bereichs — kein mehrfaches Zurück/Weiter mehr.
+      item.style.cursor = "pointer";
+      item.setAttribute("role", "button");
+      item.tabIndex = 0;
+      // Wichtig: render() explizit aufrufen — der State-Subscriber zeichnet
+      // absichtlich nur die Sidebar neu (Fokus-Schutz in Texteingaben).
+      const springe = () => {
+        state.setMeta({ currentStepIndex: g.firstIdx });
+        render();
+      };
+      item.addEventListener("click", springe);
+      item.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); springe(); }
+      });
       refs.sidebarNav.appendChild(item);
     });
     refs.timeEstimate.textContent =

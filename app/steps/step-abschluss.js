@@ -448,6 +448,24 @@ function renderVollstaendig(container, s, therapistMode) {
     // ── 03 · AKTUELLE BESCHWERDEN (Fließtext + Vertiefung) ──
     const W_TEXT_IDS = ["HB-001", "HB-003", "HB-004", "HB-005", "HB-006", "HB-007", "HB-008", "HB-009", "HB-010", "HB-011", "HB-012", "HB-013"];
     const besch = sektionNr(container, ++nr, "Aktuelle Beschwerden");
+    // Globale Schmerzskala aus dem Ziele-Schritt (7-Tage-Durchschnitt, NRS)
+    // — sichtbar machen, auch wenn sie nur dort erfasst wurde (Sondres
+    // Befund: die Skala fehlte in den Berichten komplett).
+    if (a["NRS-avg"] != null && a["NRS-avg"] !== "") {
+      consumed.add("NRS-avg");
+      const nrsWrap = el("div");
+      nrsWrap.style.margin = "0 0 12px";
+      const nrsKopf = el("div", "field-hint", `Schmerz gesamt (Ø letzte 7 Tage, NRS): ${a["NRS-avg"]}/10`);
+      nrsKopf.style.fontWeight = "var(--weight-semibold)";
+      nrsWrap.appendChild(nrsKopf);
+      const nrsTrack = el("div");
+      nrsTrack.style.cssText = "height:10px;border-radius:999px;background:var(--color-surface-sunken);overflow:hidden;margin-top:4px;max-width:340px;";
+      const nrsFill = el("div");
+      nrsFill.style.cssText = `height:100%;width:${Math.min(10, Math.max(0, Number(a["NRS-avg"]))) * 10}%;background:${schmerzFarbe(Number(a["NRS-avg"]))};`;
+      nrsTrack.appendChild(nrsFill);
+      nrsWrap.appendChild(nrsTrack);
+      besch.appendChild(nrsWrap);
+    }
     if (!s.beschwerden.length) besch.appendChild(el("p", "field-hint", "Keine Beschwerden erfasst."));
     s.beschwerden.forEach((b, i) => {
       const prio = b.prioritaet ? ` (${b.prioritaet.kurz} · ${b.prioritaet.label})` : "";
@@ -1017,10 +1035,13 @@ function renderKompakt(container, s, therapistMode) {
     const dx = therapistMode && b.verdacht.length ? `; V.a. ${diagnoseLabel(b.verdacht[0].label)}` : "";
     return `${b.region}${prio}${details.length ? " — " + details.join(", ") : ""}${dx}`;
   });
+  // Globale 7-Tage-Schmerz-NRS (aus dem Ziele-Schritt) gehört in den
+  // Bericht — auch wenn je Beschwerde (noch) kein Einzelwert erfasst ist.
+  const nrsAvg = a["NRS-avg"] != null && a["NRS-avg"] !== "" ? ` Der Schmerz liegt im 7-Tage-Durchschnitt bei ${a["NRS-avg"]}/10 (NRS).` : "";
   absatz(
-    beschTexte.length
+    (beschTexte.length
       ? `${anrede}${name} stellt sich am ${datum} in unserer Praxis vor mit: ${beschTexte.join("; ")}.`
-      : `${anrede}${name} stellt sich am ${datum} zur ganzheitlichen Analyse in unserer Praxis vor.`
+      : `${anrede}${name} stellt sich am ${datum} zur ganzheitlichen Analyse in unserer Praxis vor.`) + nrsAvg
   );
 
   // 1b) Je Beschwerde ein Detail-Absatz (Sondre: „alles muss in die
