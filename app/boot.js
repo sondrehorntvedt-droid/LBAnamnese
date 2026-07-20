@@ -19,6 +19,7 @@ import {
   goToStepId,
 } from "./router.js";
 import { initRedFlagWatcher } from "./redflags.js";
+import { DEMO_MODUS } from "./demo.js";
 import { renderThemeSchalter } from "./theme.js";
 import { ensureSitzungInit } from "./patient-record.js";
 import { startAutoSync } from "./cloud-sync.js";
@@ -201,6 +202,6 @@ export function startApp() {
 
   ensureSitzungInit();
   initRedFlagWatcher();
-  startAutoSync(state); // Cloud-Autosave je Benutzer (siehe cloud-sync.js)
+  if (!DEMO_MODUS) startAutoSync(state); // Cloud-Autosave je Benutzer — im Demo aus
   render();
 }

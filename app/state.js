@@ -11,6 +11,9 @@
  * sondern ausschließlich in app/privacy.js beim Rendern der Zusammenfassung.
  */
 
+import { DEMO_MODUS } from "./demo.js";
+import { getDemoDaten } from "../data/demo_max_mustermann.js";
+
 const STORAGE_KEY = "lindebergs_anamnese_v1";
 
 function loadFromStorage() {
@@ -26,7 +29,9 @@ function loadFromStorage() {
 
 class AnamneseState {
   constructor() {
-    const saved = loadFromStorage();
+    // Demo-Modus (?demo=max): Musterpatient statt localStorage laden —
+    // der echte, gespeicherte Anamnese-Stand bleibt vollständig unberührt.
+    const saved = DEMO_MODUS ? getDemoDaten() : loadFromStorage();
     this.answers = saved?.answers ?? {};
     this.meta = {
       currentStepIndex: 0,
@@ -40,6 +45,7 @@ class AnamneseState {
   }
 
   save() {
+    if (DEMO_MODUS) return; // Demo ist read-only — nichts überschreiben
     try {
       localStorage.setItem(
         STORAGE_KEY,

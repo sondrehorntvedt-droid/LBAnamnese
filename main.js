@@ -13,6 +13,7 @@ import { getSession } from "./app/supabase.js";
 import { renderAuthGate } from "./app/auth.js";
 import { initialSync } from "./app/cloud-sync.js";
 import { initTheme } from "./app/theme.js";
+import { DEMO_MODUS } from "./app/demo.js";
 
 const root = document.getElementById("app");
 
@@ -43,7 +44,42 @@ async function starteNachLogin(session) {
   }
 }
 
+/**
+ * Demo-Modus (?demo=max): Musterpatient „Max Mustermann" — ohne Login,
+ * ohne Cloud-Sync, ohne Speichern. Startet direkt in der Zusammenfassung,
+ * damit alle Reiter (Vollständig/Kompakt/Befunde/Diagnosen/Verlauf/Klinik)
+ * sofort mit reichen Beispieldaten sichtbar sind.
+ */
+async function starteDemo() {
+  // Deutliches Banner — niemand soll die Demo für echte Daten halten.
+  const banner = document.createElement("div");
+  banner.style.cssText =
+    "position:sticky;top:0;z-index:200;background:var(--color-status-yellow, #b98301);color:#fff;padding:8px 16px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:14px;";
+  const txt = document.createElement("span");
+  txt.textContent = "🧪 DEMO — Musterpatient „Max Mustermann“ (fiktive Daten, nichts wird gespeichert)";
+  banner.appendChild(txt);
+  const raus = document.createElement("a");
+  raus.href = window.location.pathname; // gleiche Seite ohne ?demo
+  raus.textContent = "Demo verlassen";
+  raus.style.cssText = "color:#fff;text-decoration:underline;font-weight:600;";
+  banner.appendChild(raus);
+  document.body.prepend(banner);
+
+  const { startApp } = await import("./app/boot.js");
+  const { getVisibleSteps } = await import("./app/router.js");
+  const { state } = await import("./app/state.js");
+  // Direkt zur Zusammenfassung springen (alle Schritte bleiben über die
+  // Seitenleiste erreichbar — auch die Demo ist frei durchklickbar).
+  const idx = getVisibleSteps().findIndex((s) => s.id === "abschluss");
+  if (idx >= 0) state.setMeta({ currentStepIndex: idx });
+  startApp();
+}
+
 (async function boot() {
+  if (DEMO_MODUS) {
+    await starteDemo();
+    return;
+  }
   const session = await getSession();
   if (session) {
     await starteNachLogin(session);

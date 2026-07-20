@@ -19,6 +19,8 @@
  */
 
 import { state } from "./state.js";
+import { DEMO_MODUS } from "./demo.js";
+import { getDemoDaten } from "../data/demo_max_mustermann.js";
 
 const AKTE_KEY = "lindebergs_patientenakte";
 
@@ -37,6 +39,9 @@ const VORGESCHICHTE_IDS = [
 ];
 
 export function ladeAkte() {
+  // Demo-Modus: Muster-Akte (frühere Termine für Schmerzkurve/Verlauf) —
+  // die echte Patientenakte im localStorage bleibt unangetastet.
+  if (DEMO_MODUS) return getDemoDaten().akte;
   try {
     const raw = localStorage.getItem(AKTE_KEY);
     return raw ? JSON.parse(raw) : { stammdaten: {}, sitzungen: [] };
@@ -46,6 +51,7 @@ export function ladeAkte() {
 }
 
 function speichereAkte(akte) {
+  if (DEMO_MODUS) return; // Demo ist read-only
   localStorage.setItem(AKTE_KEY, JSON.stringify(akte));
 }
 

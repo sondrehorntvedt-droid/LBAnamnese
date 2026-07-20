@@ -217,8 +217,21 @@ export function getGesicherteDiagnosen(answers, uploads) {
     });
   }
   // Datierte Diagnosen (PMH-001b) — ICD-10 unbekannt, aber gesicherte Angabe.
+  // Dublette vermeiden: nennt der Patient dieselbe Diagnose nochmal mit Jahr
+  // (z.B. „Arterielle Hypertonie" angekreuzt UND datiert), wird das Jahr an
+  // die bestehende Zeile gehängt statt eine zweite Zeile zu erzeugen.
   (a["PMH-001b"] || []).forEach((d) => {
-    if (d && d.diagnose) liste.push({ name: d.diagnose, icd10: "", quelle: `Anamnese${d.jahr ? " (" + d.jahr + ")" : ""}` });
+    if (!d || !d.diagnose) return;
+    const norm = (s) => String(s).toLowerCase().replace(/[^a-zäöüß]/g, "");
+    const vorhanden = liste.find(
+      (e) => norm(e.name).includes(norm(d.diagnose)) || norm(d.diagnose).includes(norm(e.name))
+    );
+    if (vorhanden && d.jahr) {
+      vorhanden.quelle = `Anamnese (${d.jahr})`;
+      return;
+    }
+    if (vorhanden) return;
+    liste.push({ name: d.diagnose, icd10: "", quelle: `Anamnese${d.jahr ? " (" + d.jahr + ")" : ""}` });
   });
   return liste;
 }
