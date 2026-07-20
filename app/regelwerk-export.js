@@ -26,6 +26,10 @@ import { buildManifest } from "./manifest.js";
 export const REGELWERK_SCHEMA = "lindebergs-regelwerk@1";
 
 export function baueRegelwerk(version) {
+  // Manifest OHNE Tagesdatum einbetten: `erzeugt` würde die Hash-
+  // Reproduzierbarkeit brechen (gleicher Stand ⇒ gleicher SHA-256).
+  const umfang = { ...buildManifest() };
+  delete umfang.erzeugt;
   return {
     schema: REGELWERK_SCHEMA,
     version,
@@ -55,7 +59,7 @@ export function baueRegelwerk(version) {
     darm_red_flags: DARM_RED_FLAGS,
     immun_regeln: IMMUN_REGELN,
     licht_regeln: LICHT_REGELN,
-    umfang: buildManifest(),
+    umfang,
   };
 }
 
